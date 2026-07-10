@@ -1,4 +1,4 @@
-// Vragenbank "Autoquiz" — De Slimste Thuis-stijl
+// Vragenbank "De Slimste Onderweg"
 // Alle rondes: 3-6-9, Open Deur, De Puzzel, Collectief Geheugen (audio), Ingelijst, Finale.
 // Elke keyword heeft varianten voor fuzzy STT-matching (cijfers ook als woorden).
 
@@ -43,7 +43,7 @@ const BANK_369 = [
   { q: "Welke kunstenaar signeerde in 1917 een urinoir met R. Mutt?", answers: ["duchamp", "marcel duchamp"] },
   { q: "Wat is de munteenheid van Zwitserland?", answers: ["frank", "zwitserse frank", "de frank"] },
   { q: "Wie schreef De Avonden?", answers: ["reve", "gerard reve", "gerard kornelis van het reve"] },
-  { q: "Hoeveel strijkers... pardon: hoeveel symfonieën voltooide Beethoven?", answers: ["9", "negen"] },
+  { q: "Hoeveel symfonieën voltooide Beethoven?", answers: ["9", "negen"] },
   { q: "Welke planeet draait als enige 'op zijn kant' om de zon?", answers: ["uranus"] },
   { q: "Hoe heet de rivier die door Rome stroomt?", answers: ["tiber", "de tiber"] },
   { q: "Welk land heeft de meeste inwoners van Afrika?", answers: ["nigeria"] },
@@ -60,7 +60,22 @@ const BANK_369 = [
   { q: "Hoe heet de vrees om zonder mobiele telefoon te zitten?", answers: ["nomofobie"] },
   { q: "Welke zanger werd geboren als Farrokh Bulsara?", answers: ["freddie mercury", "mercury"] },
   { q: "Wat is het enige zoogdier dat echt kan vliegen?", answers: ["vleermuis", "de vleermuis"] },
-  { q: "Welke twee kleuren heeft de vlag van Polen?", answers: ["rood en wit", "wit en rood", "rood wit", "wit rood"] }
+  { q: "Welke twee kleuren heeft de vlag van Polen?", answers: ["rood en wit", "wit en rood", "rood wit", "wit rood"] },
+  { q: "Welke planeet is de heetste van ons zonnestelsel?", answers: ["venus"] },
+  { q: "Hoe heet de Japanse kunst van het papiervouwen?", answers: ["origami"] },
+  { q: "Welke Nederlander verbeterde de microscoop en zag als eerste bacteriën?", answers: ["van leeuwenhoek", "antoni van leeuwenhoek", "leeuwenhoek"] },
+  { q: "In welke stad staat het Kremlin?", answers: ["moskou"] },
+  { q: "Wat is het grootste orgaan van het menselijk lichaam?", answers: ["huid", "de huid"] },
+  { q: "Hoe heette de dynastie van tsaar Nicolaas de Tweede?", answers: ["romanov", "de romanovs", "romanovs"] },
+  { q: "Welke Franse koning stond bekend als de Zonnekoning?", answers: ["lodewijk de veertiende", "lodewijk veertien", "lodewijk de 14e", "louis quatorze"] },
+  { q: "Op welk Indonesisch eiland ligt Jakarta?", answers: ["java"] },
+  { q: "Welk fabeldier is het nationale dier van Schotland?", answers: ["eenhoorn", "de eenhoorn"] },
+  { q: "Welke schrijver bedacht Sherlock Holmes?", answers: ["conan doyle", "arthur conan doyle", "doyle"] },
+  { q: "Wat is de hoofdstad van Kenia?", answers: ["nairobi"] },
+  { q: "Welke Griekse god heerste over de zee?", answers: ["poseidon"] },
+  { q: "Hoe heet de wetenschap die het weer bestudeert?", answers: ["meteorologie", "de meteorologie"] },
+  { q: "Welk land won het allereerste WK voetbal in 1930?", answers: ["uruguay"] },
+  { q: "Hoe heette het schip waarmee Darwin zijn beroemde reis maakte?", answers: ["beagle", "de beagle", "hms beagle"] }
 ];
 
 // ---------------------------------------------------------------------------
@@ -186,6 +201,46 @@ const BANK_OPENDEUR = [
       { label: "Los Angeles / Santa Monica (eindpunt)", variants: ["los angeles", "santa monica", "californie"] },
       { label: "Mother Road / iconische snelweg", variants: ["mother road", "snelweg", "highway", "moederweg"] }
     ]
+  },
+  {
+    topic: "De Berlijnse Muur",
+    prompt: "Wat weet je over de Berlijnse Muur?",
+    keywords: [
+      { label: "Gebouwd in 1961", variants: ["1961", "negentien eenenzestig", "negentienhonderd eenenzestig"] },
+      { label: "Oost-Duitsland / DDR", variants: ["oost duitsland", "ddr", "de ddr"] },
+      { label: "Gevallen in 1989", variants: ["1989", "negentien negenentachtig", "negentienhonderd negenentachtig"] },
+      { label: "Checkpoint Charlie", variants: ["checkpoint charlie", "checkpoint"] }
+    ]
+  },
+  {
+    topic: "Mount Everest",
+    prompt: "Wat weet je over de Mount Everest?",
+    keywords: [
+      { label: "Himalaya", variants: ["himalaya", "de himalaya"] },
+      { label: "Nepal / Tibet", variants: ["nepal", "tibet", "china"] },
+      { label: "Hillary en Tenzing (eerste beklimming)", variants: ["hillary", "edmund hillary", "tenzing", "sherpa tenzing"] },
+      { label: "8848 meter", variants: ["8848", "achtduizend achthonderd achtenveertig", "bijna negen kilometer"] }
+    ]
+  },
+  {
+    topic: "Stonehenge",
+    prompt: "Wat weet je over Stonehenge?",
+    keywords: [
+      { label: "Engeland", variants: ["engeland", "groot brittannie", "verenigd koninkrijk"] },
+      { label: "Stenen cirkel", variants: ["stenen cirkel", "steencirkel", "grote stenen", "cirkel van stenen"] },
+      { label: "Zonnewende", variants: ["zonnewende", "midzomer", "solstitium", "zomerzonnewende"] },
+      { label: "Prehistorie / druïden", variants: ["prehistorie", "prehistorisch", "druiden", "steentijd", "bronstijd"] }
+    ]
+  },
+  {
+    topic: "Alcatraz",
+    prompt: "Wat weet je over Alcatraz?",
+    keywords: [
+      { label: "Gevangenis", variants: ["gevangenis", "de gevangenis", "cellen"] },
+      { label: "Eiland bij San Francisco", variants: ["san francisco", "eiland", "baai van san francisco"] },
+      { label: "Al Capone (gevangene)", variants: ["al capone", "capone"] },
+      { label: "Ontsnapping van 1962", variants: ["ontsnapping", "1962", "ontsnapt", "lepels", "escape"] }
+    ]
   }
 ];
 
@@ -208,7 +263,11 @@ const BANK_PUZZEL = [
   { clues: ["Hollywood Boulevard", "Bethlehem", "Michelin", "De zon is er één"], answer: { label: "Ster", variants: ["ster", "de ster", "een ster", "sterren"] } },
   { clues: ["Notenbalk", "Onder de deurmat", "Tot succes", "Slot"], answer: { label: "Sleutel", variants: ["sleutel", "de sleutel", "een sleutel"] } },
   { clues: ["Achilles", "Hoge hakken", "Smalste deel van een fles", "Wijntje in de trein"], answer: { label: "Hiel / hak", variants: ["hiel", "hak", "de hiel", "de hak"] } },
-  { clues: ["Titan is er één van", "Pink Floyd zong over de donkere kant", "Wassend of afnemend", "Neil Armstrong"], answer: { label: "Maan", variants: ["maan", "de maan"] } }
+  { clues: ["Titan is er één van", "Pink Floyd zong over de donkere kant", "Wassend of afnemend", "Neil Armstrong"], answer: { label: "Maan", variants: ["maan", "de maan"] } },
+  { clues: ["Prometheus stal het van de goden", "Waar rook is...", "Kamp in de zomer", "Doven met water"], answer: { label: "Vuur", variants: ["vuur", "het vuur"] } },
+  { clues: ["Heelt alle wonden", "Big Ben meet het", "Vliegt als je plezier hebt", "Voor Einstein was het relatief"], answer: { label: "Tijd", variants: ["tijd", "de tijd"] } },
+  { clues: ["Kaartkleur naast schoppen", "Cupido mikt erop", "Breekt bij verdriet", "Klopt in je borst"], answer: { label: "Hart", variants: ["hart", "het hart", "harten"] } },
+  { clues: ["Witje en de zeven dwergen", "Geen twee vlokken gelijk", "Ballen gooien in de winter", "Wit tapijt"], answer: { label: "Sneeuw", variants: ["sneeuw", "de sneeuw"] } }
 ];
 
 // ---------------------------------------------------------------------------
@@ -279,6 +338,39 @@ const BANK_GEHEUGEN = [
       { q: "Ongeveer hoeveel minuten duurde de oorlog?", answers: ["38", "achtendertig", "40", "veertig"] },
       { q: "Naar welk consulaat vluchtte de sultan?", answers: ["duitse", "duitsland", "het duitse consulaat"] },
       { q: "In welk jaar vond deze oorlog plaats?", answers: ["1896", "achttien zesennegentig", "achttienhonderd zesennegentig"] }
+    ]
+  },
+  {
+    title: "De vliegende tuinstoel",
+    story: "In 1982 bond de Amerikaan Larry Walters vijfenveertig weerballonnen aan een tuinstoel en steeg op boven Los Angeles. Hij klom tot bijna vijf kilometer hoogte en zweefde het luchtruim van de luchthaven binnen, tot verbijstering van twee passerende piloten. Om te dalen schoot hij ballonnen kapot met een luchtbuks. Hij landde uiteindelijk in elektriciteitskabels, ongedeerd, en kreeg een boete van de luchtvaartautoriteit.",
+    questions: [
+      { q: "Hoeveel weerballonnen gebruikte hij?", answers: ["45", "vijfenveertig"] },
+      { q: "Waaraan bond hij de ballonnen vast?", answers: ["tuinstoel", "een tuinstoel", "stoel"] },
+      { q: "Boven welke stad steeg hij op?", answers: ["los angeles"] },
+      { q: "Waarmee schoot hij ballonnen kapot om te dalen?", answers: ["luchtbuks", "een luchtbuks", "buks", "geweer"] },
+      { q: "Waarin landde hij?", answers: ["elektriciteitskabels", "stroomkabels", "kabels", "hoogspanningskabels"] }
+    ]
+  },
+  {
+    title: "De zoete vloedgolf",
+    story: "In 1919 barstte in Boston een gigantische opslagtank open. Een golf van ruim acht meter hoge melasse, dikke suikerstroop, raasde met wel vijfenvijftig kilometer per uur door de straten. Eenentwintig mensen kwamen om en gebouwen werden van hun fundering geduwd. Bewoners beweerden dat de buurt op warme zomerdagen nog tientallen jaren zoet rook.",
+    questions: [
+      { q: "In welke stad gebeurde dit?", answers: ["boston"] },
+      { q: "Welke stof stroomde door de straten?", answers: ["melasse", "suikerstroop", "stroop"] },
+      { q: "In welk jaar was de ramp?", answers: ["1919", "negentien negentien", "negentienhonderd negentien"] },
+      { q: "Hoeveel mensen kwamen om?", answers: ["21", "eenentwintig"] },
+      { q: "Wat roken bewoners nog jaren op warme dagen?", answers: ["zoet", "zoete geur", "stroop", "melasse", "suiker"] }
+    ]
+  },
+  {
+    title: "De man die nooit bestond",
+    story: "In 1943 lieten de Britten het lichaam van een zogenaamde majoor William Martin aanspoelen bij de Spaanse kust, met een koffertje vol valse invasieplannen. De Duitsers trapten erin: de documenten wezen naar Griekenland, terwijl het echte doel Sicilië was. Hitler verplaatste troepen naar Griekenland, en de geallieerde landing op Sicilië verliep daardoor veel makkelijker. De operatie heette Mincemeat.",
+    questions: [
+      { q: "In welk jaar gebeurde dit?", answers: ["1943", "negentien drieenveertig", "negentienhonderd drieenveertig"] },
+      { q: "Welke naam en rang had het lichaam gekregen?", answers: ["majoor william martin", "william martin", "majoor martin", "martin"] },
+      { q: "Bij welk land spoelde het lichaam aan?", answers: ["spanje", "de spaanse kust"] },
+      { q: "Welk eiland was het echte doelwit?", answers: ["sicilie"] },
+      { q: "Hoe heette de operatie?", answers: ["mincemeat", "operatie mincemeat", "operation mincemeat"] }
     ]
   }
 ];
@@ -370,7 +462,7 @@ const BANK_INGELIJST = [
   {
     subject: "Anne Frank",
     keywords: [
-      { label: "Dagboek", variants: ["dagboek", "het dagboek", "het achterhuis boek", "kitty"] },
+      { label: "Dagboek", variants: ["dagboek", "het dagboek", "kitty"] },
       { label: "Het Achterhuis", variants: ["achterhuis", "het achterhuis"] },
       { label: "Amsterdam (Prinsengracht)", variants: ["amsterdam", "prinsengracht"] },
       { label: "Ondergedoken", variants: ["ondergedoken", "onderduiken", "verstopt"] },
@@ -405,6 +497,46 @@ const BANK_INGELIJST = [
       { label: "Paul McCartney", variants: ["paul mccartney", "mccartney"] },
       { label: "Abbey Road (zebrapad)", variants: ["abbey road", "zebrapad"] },
       { label: "Yellow Submarine", variants: ["yellow submarine", "submarine"] }
+    ]
+  },
+  {
+    subject: "Charlie Chaplin",
+    keywords: [
+      { label: "Stomme films", variants: ["stomme film", "stomme films", "zwijgende film", "geen geluid"] },
+      { label: "Snorretje", variants: ["snor", "snorretje"] },
+      { label: "The Tramp / de zwerver", variants: ["tramp", "the tramp", "zwerver", "de zwerver"] },
+      { label: "The Great Dictator", variants: ["great dictator", "the great dictator", "dictator", "hitler parodie"] },
+      { label: "Bolhoed en wandelstok", variants: ["bolhoed", "wandelstok", "hoed en stok"] }
+    ]
+  },
+  {
+    subject: "Mozart",
+    keywords: [
+      { label: "Salzburg / Oostenrijk", variants: ["salzburg", "oostenrijk", "wenen"] },
+      { label: "Wonderkind", variants: ["wonderkind", "kindgenie", "componeerde als kind"] },
+      { label: "Die Zauberflöte / De Toverfluit", variants: ["zauberflote", "toverfluit", "de toverfluit"] },
+      { label: "Requiem (onvoltooid)", variants: ["requiem", "het requiem"] },
+      { label: "Jong gestorven (35)", variants: ["35", "vijfendertig", "jong gestorven", "jong overleden"] }
+    ]
+  },
+  {
+    subject: "Pablo Picasso",
+    keywords: [
+      { label: "Spanje (Málaga)", variants: ["spanje", "spaans", "malaga"] },
+      { label: "Kubisme", variants: ["kubisme", "het kubisme", "kubist"] },
+      { label: "Guernica", variants: ["guernica"] },
+      { label: "Blauwe periode", variants: ["blauwe periode", "blauw"] },
+      { label: "Vredesduif", variants: ["vredesduif", "duif", "de duif"] }
+    ]
+  },
+  {
+    subject: "Stephen Hawking",
+    keywords: [
+      { label: "Zwarte gaten", variants: ["zwarte gaten", "zwart gat", "hawkingstraling"] },
+      { label: "ALS / rolstoel", variants: ["als", "rolstoel", "spierziekte"] },
+      { label: "Spraakcomputer", variants: ["spraakcomputer", "computerstem", "stemcomputer"] },
+      { label: "A Brief History of Time", variants: ["a brief history of time", "brief history of time", "het heelal", "korte geschiedenis van de tijd"] },
+      { label: "Cambridge", variants: ["cambridge"] }
     ]
   }
 ];
@@ -511,6 +643,26 @@ const BANK_FINALE = [
       { label: "Balthasar Gerards (moordenaar)", variants: ["balthasar gerards", "gerards", "balthazar gerards"] },
       { label: "Opstand tegen Spanje / Filips II", variants: ["spanje", "filips", "filips de tweede", "tachtigjarige oorlog"] },
       { label: "Het Wilhelmus", variants: ["wilhelmus", "het wilhelmus", "volkslied"] }
+    ]
+  },
+  {
+    subject: "Amsterdam",
+    keywords: [
+      { label: "Grachten", variants: ["grachten", "de grachten", "grachtengordel"] },
+      { label: "Rijksmuseum", variants: ["rijksmuseum", "het rijksmuseum", "nachtwacht"] },
+      { label: "Anne Frank Huis", variants: ["anne frank huis", "anne frank", "achterhuis"] },
+      { label: "Fietsen", variants: ["fietsen", "fiets", "fietsers"] },
+      { label: "Ajax", variants: ["ajax", "johan cruijff arena"] }
+    ]
+  },
+  {
+    subject: "De Efteling",
+    keywords: [
+      { label: "Sprookjesbos", variants: ["sprookjesbos", "het sprookjesbos", "sprookjes"] },
+      { label: "Holle Bolle Gijs", variants: ["holle bolle gijs", "papier hier"] },
+      { label: "Kaatsheuvel", variants: ["kaatsheuvel", "brabant", "noord brabant"] },
+      { label: "Baron 1898 / Python (achtbanen)", variants: ["baron", "python", "achtbaan", "achtbanen"] },
+      { label: "Anton Pieck", variants: ["anton pieck", "pieck"] }
     ]
   }
 ];

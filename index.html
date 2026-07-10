@@ -97,8 +97,8 @@
   .clock .time { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; }
   .clock.running .time { color: #e3b341; }
   .clock.dead .time { color: #ff6b6b; }
-  .btn-row { display: flex; gap: 10px; margin-top: 6px; }
-  .btn-row button { flex: 1; }
+  .btn-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .btn-row button { flex: 1 1 22%; white-space: nowrap; }
   .mic-indicator {
     width: 14px; height: 14px; border-radius: 50%; background: #444; display: inline-block; margin-right: 6px;
   }
@@ -158,7 +158,9 @@
 
     <div class="btn-row">
       <button class="secondary" id="repeatBtn">🔁 Herhaal</button>
+      <button class="secondary" id="forceBtn">✅ Goed</button>
       <button class="secondary" id="passBtn">⏭ Pas</button>
+      <button class="secondary" id="pauseBtn">⏸ Pauze</button>
     </div>
     <div class="progress" id="progressText"></div>
   </div>
@@ -192,7 +194,10 @@
   let players = [];        // { name, score }
   let mode = "seconds";    // "seconds" | "points"
   let enabledRounds = { r369: true, opendeur: true, puzzel: true, geheugen: true, ingelijst: true, finale: true };
-  let activeListen = null; // { recognition, finish } — zodat knoppen kunnen ingrijpen
+  let activeListen = null; // { finish } — zodat knoppen kunnen ingrijpen
+  let paused = false;
+  let resumeQueue = [];
+  let currentSlotHandler = null; // tik op een keyword-balkje = handmatig goed rekenen
 
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
@@ -249,7 +254,27 @@
   }
   const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
-  function speak(text) {
+  // Kies n items die deze telefoon nog niet gehad heeft (localStorage).
+  // Pas als de bank op is, wordt hij gereset en hergebruikt.
+  function pickFresh(bankKey, bank, n) {
+    n = Math.min(n, bank.length);
+    let used = [];
+    try { used = JSON.parse(localStorage.getItem("dso_used_" + bankKey) || "[]"); } catch (e) {}
+    let avail = bank.map((_, i) => i).filter(i => !used.includes(i));
+    if (avail.length < n) { used = []; avail = bank.map((_, i) => i); }
+    const chosen = shuffle(avail).slice(0, n);
+    try { localStorage.setItem("dso_used_" + bankKey, JSON.stringify(used.concat(chosen))); } catch (e) {}
+    return chosen.map(i => bank[i]);
+  }
+
+  // Pauze: speak() en listenOnce() wachten hier tot er hervat wordt.
+  function pauseGate() {
+    if (!paused) return Promise.resolve();
+    return new Promise(r => resumeQueue.push(r));
+  }
+
+  async function speak(text) {
+    await pauseGate();
     return new Promise((resolve) => {
       if (!hasTTS) return resolve();
       window.speechSynthesis.cancel();
@@ -267,13 +292,12 @@
     });
   }
 
-  // Luister één keer. Resolvet {transcripts: string[]|null, command: "pass"|"repeat"|null}
-  // Knoppen (Herhaal/Pas) kunnen de luisterbeurt onderbreken.
-  function listenOnce(timeoutMs = 9000) {
+  // Luister één keer. Resolvet {transcripts, command} — command kan ook van knoppen komen.
+  async function listenOnce(timeoutMs = 9000) {
+    await pauseGate();
     return new Promise((resolve) => {
       if (!SpeechRecognitionImpl) {
         statusText.textContent = "Spraakherkenning niet beschikbaar.";
-        // zonder STT is spelen zinloos, maar blijf niet hangen:
         return setTimeout(() => resolve({ transcripts: null, command: null }), 1500);
       }
       window.speechSynthesis.cancel();
@@ -321,6 +345,29 @@
 
   $("repeatBtn").addEventListener("click", () => { if (activeListen) activeListen.finish({ transcripts: null, command: "repeat" }); });
   $("passBtn").addEventListener("click", () => { if (activeListen) activeListen.finish({ transcripts: null, command: "pass" }); });
+  // "Goed": antwoord was gezegd maar niet verstaan — reken het goed.
+  $("forceBtn").addEventListener("click", () => { if (activeListen) activeListen.finish({ transcripts: null, command: "force" }); });
+
+  const pauseBtn = $("pauseBtn");
+  pauseBtn.addEventListener("click", () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? "▶ Verder" : "⏸ Pauze";
+    if (paused) {
+      window.speechSynthesis.cancel();
+      if (activeListen) activeListen.finish({ transcripts: null, command: "repeat" });
+      statusText.textContent = "⏸ Gepauzeerd";
+    } else {
+      const q = resumeQueue; resumeQueue = [];
+      q.forEach(r => r());
+    }
+  });
+
+  // Tik op een verborgen keyword-balkje om het handmatig goed te rekenen.
+  keywordsBox.addEventListener("click", (e) => {
+    const el = e.target.closest(".kw");
+    if (!el || !currentSlotHandler || el.classList.contains("found") || el.classList.contains("revealed")) return;
+    currentSlotHandler(Number(el.dataset.i));
+  });
 
   // ---------- Score ----------
   function award(player, seconds) {
@@ -359,6 +406,7 @@
     keywords.forEach((kw, i) => {
       const div = document.createElement("div");
       div.className = "kw " + (state[i] === "hidden" ? "" : state[i]);
+      div.dataset.i = i;
       div.textContent = state[i] === "hidden" ? "■".repeat(Math.min(14, Math.max(6, kw.label.length))) : kw.label;
       keywordsBox.appendChild(div);
     });
@@ -375,6 +423,7 @@
       const res = await listenOnce();
       if (res.command === "repeat") { await speak(qText); continue; }
       if (res.command === "pass") return false;
+      if (res.command === "force") return true; // handmatig goedgekeurd
       if (!res.transcripts) {
         attemptsLeft--;
         if (attemptsLeft <= 0) return false;
@@ -385,12 +434,13 @@
     }
   }
 
-  // ---------- Keyword-beurt (Open Deur, Ingelijst, Finale-onderwerpen) ----------
+  // ---------- Keyword-beurt (Open Deur, Ingelijst) ----------
   async function keywordTurn(player, spokenIntro, keywords, valuePer, { repeatText = null } = {}) {
     const state = keywords.map(() => "hidden");
     renderKeywordSlots(keywords, state);
     turnBanner.textContent = `${player.name} is aan de beurt`;
     renderScoreboard(player);
+    currentSlotHandler = (i) => { if (activeListen) activeListen.finish({ transcripts: null, command: "manual", manualIndex: i }); };
     await speak(spokenIntro);
     let misses = 0;
     let found = 0;
@@ -398,6 +448,17 @@
       const res = await listenOnce();
       if (res.command === "repeat") { await speak(repeatText || spokenIntro); continue; }
       if (res.command === "pass") break;
+      if (res.command === "force") { statusText.textContent = "Tik op het balkje van het antwoord dat gezegd is."; continue; }
+      if (res.command === "manual" && state[res.manualIndex] === "hidden") {
+        state[res.manualIndex] = "found";
+        misses = 0; found++;
+        award(player, valuePer);
+        renderKeywordSlots(keywords, state);
+        const left = keywords.length - found;
+        showResult(true, `✅ ${keywords[res.manualIndex].label}`);
+        await speak(`Goed gerekend: ${keywords[res.manualIndex].label}.` + (left > 0 ? ` Nog ${left}.` : " Alles gevonden!"));
+        continue;
+      }
       if (!res.transcripts) { misses++; continue; }
       const remaining = keywords.map((kw, i) => ({ kw, i })).filter(x => state[x.i] === "hidden");
       const hits = [];
@@ -421,6 +482,7 @@
       }
     }
     // onthulling
+    currentSlotHandler = null;
     const missed = keywords.filter((_, i) => state[i] === "hidden");
     keywords.forEach((_, i) => { if (state[i] === "hidden") state[i] = "revealed"; });
     renderKeywordSlots(keywords, state);
@@ -434,7 +496,7 @@
     roundBanner.textContent = "Ronde · 3-6-9";
     clearStage();
     await speak(`De eerste ronde: drie, zes, negen. ${N_369_QUESTIONS} korte vragen, om de beurt. Elke derde vraag levert ${mode === "seconds" ? "tien seconden" : "extra punten"} op.`);
-    const qs = shuffle(BANK_369).slice(0, N_369_QUESTIONS);
+    const qs = pickFresh("369", BANK_369, N_369_QUESTIONS);
     for (let i = 0; i < qs.length; i++) {
       clearStage();
       const player = players[i % players.length];
@@ -459,8 +521,8 @@
     roundBanner.textContent = "Ronde · Open Deur";
     clearStage();
     await speak(`De Open Deur. Iedere speler krijgt een onderwerp met vier sleutelwoorden. Elk goed antwoord is ${mode === "seconds" ? "twintig seconden" : "twee punten"} waard. Zeg pas als je het niet meer weet.`);
-    const topics = shuffle(BANK_OPENDEUR).slice(0, players.length);
-    for (let i = 0; i < players.length; i++) {
+    const topics = pickFresh("opendeur", BANK_OPENDEUR, players.length);
+    for (let i = 0; i < players.length && i < topics.length; i++) {
       clearStage();
       const t = topics[i];
       questionText.textContent = t.topic;
@@ -473,7 +535,7 @@
     roundBanner.textContent = "Ronde · De Puzzel";
     clearStage();
     await speak(`De Puzzel. Je hoort vier aanwijzingen die allemaal naar één woord verwijzen. Raad het verband, goed voor ${mode === "seconds" ? "dertig seconden" : "drie punten"}. Zeg herhaal om de aanwijzingen opnieuw te horen.`);
-    const puzzles = shuffle(BANK_PUZZEL).slice(0, players.length * PUZZELS_PER_PLAYER);
+    const puzzles = pickFresh("puzzel", BANK_PUZZEL, players.length * PUZZELS_PER_PLAYER);
     let pi = 0;
     for (let r = 0; r < PUZZELS_PER_PLAYER; r++) {
       for (let i = 0; i < players.length && pi < puzzles.length; i++, pi++) {
@@ -491,6 +553,7 @@
           const res = await listenOnce(11000);
           if (res.command === "repeat") { await speak(cluesSpoken); continue; }
           if (res.command === "pass") break;
+          if (res.command === "force") { solved = true; break; }
           if (!res.transcripts) { attempts++; continue; }
           attempts++;
           solved = res.transcripts.some(t => isCorrectAnswer(t, puz.answer.variants));
@@ -513,8 +576,8 @@
     roundBanner.textContent = "Ronde · Collectief Geheugen";
     clearStage();
     await speak(`Het Collectief Geheugen. Luister goed naar een kort verhaal. Daarna volgen vijf vragen over de details. Elk goed antwoord is ${mode === "seconds" ? "vijftien seconden" : "punten"} waard.`);
-    const stories = shuffle(BANK_GEHEUGEN).slice(0, players.length);
-    for (let i = 0; i < players.length; i++) {
+    const stories = pickFresh("geheugen", BANK_GEHEUGEN, players.length);
+    for (let i = 0; i < players.length && i < stories.length; i++) {
       clearStage();
       const player = players[i];
       const st = stories[i];
@@ -546,8 +609,8 @@
     roundBanner.textContent = "Ronde · Ingelijst";
     clearStage();
     await speak(`Ingelijst. Iedere speler krijgt een beroemd persoon in de lijst. Noem zoveel mogelijk van de vijf feiten die wij zoeken. Elk goed antwoord: ${mode === "seconds" ? "vijftien seconden" : "punten"}.`);
-    const subjects = shuffle(BANK_INGELIJST).slice(0, players.length);
-    for (let i = 0; i < players.length; i++) {
+    const subjects = pickFresh("ingelijst", BANK_INGELIJST, players.length);
+    for (let i = 0; i < players.length && i < subjects.length; i++) {
       clearStage();
       const s = subjects[i];
       questionText.textContent = `🖼 ${s.subject}`;
@@ -578,6 +641,8 @@
       await speak(`De finale wordt gespeeld door ${p1.name} en ${p2.name}. De rest is uitgeschakeld.`);
     }
 
+    currentSlotHandler = (i) => { if (activeListen) activeListen.finish({ transcripts: null, command: "manual", manualIndex: i }); };
+
     if (mode === "points") return finalePoints(p1, p2);
 
     // Seconden-finale: klokken tellen af, goed sleutelwoord = beurt wisselt.
@@ -586,7 +651,7 @@
       { player: p1, ms: Math.max(15, p1.score) * 1000 }
     ];
     await speak(`De finale. Jullie seconden zijn nu je levenslijn. Wie aan de beurt is, verliest tijd tijdens het nadenken. Een goed sleutelwoord geeft de beurt, en de klok, aan je tegenstander. Wie op nul staat, verliest. ${fin[0].player.name} begint.`);
-    const subjects = shuffle(BANK_FINALE);
+    const subjects = pickFresh("finale", BANK_FINALE, Math.min(6, BANK_FINALE.length));
     let cur = 0; // index in fin
     let si = 0;
     outer: while (si < subjects.length) {
@@ -605,12 +670,12 @@
         renderClocks(fin, cur);
         // klok loopt alleen tijdens luisteren/denken
         const tickStart = Date.now();
+        active.msSnapshot = active.ms;
         const ticker = setInterval(() => {
           active.ms = active.msSnapshot - (Date.now() - tickStart);
           renderClocks(fin, cur);
           if (active.ms <= 0) { if (activeListen) activeListen.finish({ transcripts: null, command: "timeout" }); }
         }, 200);
-        active.msSnapshot = active.ms;
         const res = await listenOnce(Math.min(10000, active.ms + 500));
         clearInterval(ticker);
         active.ms = Math.max(0, active.msSnapshot - (Date.now() - tickStart));
@@ -618,6 +683,16 @@
         if (active.ms <= 0) break outer;
 
         if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
+        if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
+        if (res.command === "manual" && state[res.manualIndex] === "hidden") {
+          state[res.manualIndex] = "found";
+          remaining--; consecutivePasses = 0;
+          renderKeywordSlots(subject.keywords, state);
+          showResult(true, `✅ ${subject.keywords[res.manualIndex].label}`);
+          cur = 1 - cur; // beurt en klok naar tegenstander
+          await speak(`Goed gerekend. ${fin[cur].player.name}, jouw klok loopt.`);
+          continue;
+        }
         if (res.command === "pass" || res.command === "timeout" || !res.transcripts) {
           consecutivePasses++;
           if (consecutivePasses >= 2) {
@@ -648,6 +723,7 @@
       }
       si++;
     }
+    currentSlotHandler = null;
     const loser = fin.find(f => f.ms <= 0) || fin.reduce((a, b) => (a.ms < b.ms ? a : b));
     const winner = fin.find(f => f !== loser);
     renderClocks(fin, -1);
@@ -657,7 +733,7 @@
 
   async function finalePoints(p1, p2) {
     await speak(`De finale op punten. Drie onderwerpen, om de beurt antwoorden. Wie de meeste sleutelwoorden vindt, wint. ${p2.name} begint.`);
-    const subjects = shuffle(BANK_FINALE).slice(0, 3);
+    const subjects = pickFresh("finale", BANK_FINALE, 3);
     const tally = new Map([[p1, 0], [p2, 0]]);
     let cur = p2;
     for (const subject of subjects) {
@@ -672,6 +748,17 @@
         turnBanner.textContent = `${cur.name} is aan de beurt`;
         const res = await listenOnce();
         if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
+        if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
+        if (res.command === "manual" && state[res.manualIndex] === "hidden") {
+          state[res.manualIndex] = "found";
+          remaining--; strikes = 0;
+          tally.set(cur, tally.get(cur) + 1);
+          renderKeywordSlots(subject.keywords, state);
+          showResult(true, `✅ ${cur.name}: ${tally.get(cur)}`);
+          await speak("Goed gerekend.");
+          cur = cur === p1 ? p2 : p1;
+          continue;
+        }
         let hit = false;
         if (res.transcripts && res.command !== "pass") {
           subject.keywords.forEach((kw, i) => {
@@ -696,6 +783,7 @@
       const missed = subject.keywords.filter((_, i) => state[i] === "hidden");
       if (missed.length) await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`);
     }
+    currentSlotHandler = null;
     const s1 = tally.get(p1), s2 = tally.get(p2);
     const winner = s1 === s2 ? null : (s1 > s2 ? p1 : p2);
     if (winner) {
