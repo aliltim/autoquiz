@@ -161,6 +161,7 @@
       <button class="secondary" id="forceBtn">✅ Goed</button>
       <button class="secondary" id="passBtn">⏭ Pas</button>
       <button class="secondary" id="pauseBtn">⏸ Pauze</button>
+      <button class="secondary" id="skipBtn">⏩ Skip</button>
     </div>
     <div class="progress" id="progressText"></div>
   </div>
@@ -228,21 +229,46 @@
     players.push({ name, score: 0 });
     playerNameInput.value = "";
     renderPlayers();
+    saveSetup();
   });
   playerNameInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addPlayerBtn.click(); });
   playersList.addEventListener("click", (e) => {
-    if (e.target.tagName === "BUTTON") { players.splice(Number(e.target.dataset.i), 1); renderPlayers(); }
+    if (e.target.tagName === "BUTTON") { players.splice(Number(e.target.dataset.i), 1); renderPlayers(); saveSetup(); }
   });
   $("modeRow").addEventListener("click", (e) => {
     const el = e.target.closest(".opt"); if (!el) return;
     mode = el.dataset.mode;
     [...$("modeRow").children].forEach(c => c.classList.toggle("on", c === el));
+    saveSetup();
   });
   $("roundsRow").addEventListener("click", (e) => {
     const el = e.target.closest(".opt"); if (!el) return;
     el.classList.toggle("on");
     enabledRounds[el.dataset.round] = el.classList.contains("on");
+    saveSetup();
   });
+
+  // Spelers en instellingen onthouden tussen sessies (geen namen opnieuw intikken)
+  function saveSetup() {
+    try {
+      localStorage.setItem("dso_setup", JSON.stringify({
+        names: players.map(p => p.name), mode, rounds: enabledRounds
+      }));
+    } catch (e) {}
+  }
+  function restoreSetup() {
+    try {
+      const s = JSON.parse(localStorage.getItem("dso_setup") || "null");
+      if (!s) return;
+      players = (s.names || []).map(n => ({ name: n, score: 0 }));
+      if (s.mode === "points" || s.mode === "seconds") mode = s.mode;
+      if (s.rounds) enabledRounds = Object.assign(enabledRounds, s.rounds);
+      renderPlayers();
+      [...$("modeRow").children].forEach(c => c.classList.toggle("on", c.dataset.mode === mode));
+      [...$("roundsRow").children].forEach(c => c.classList.toggle("on", !!enabledRounds[c.dataset.round]));
+    } catch (e) {}
+  }
+  restoreSetup();
 
   // ---------- Utils ----------
   function shuffle(arr) {
@@ -398,6 +424,9 @@
     }
   });
 
+  // Skip: breekt het voorlezen af (uitleg, oordeel, tussenstand). speak() resolvet direct.
+  $("skipBtn").addEventListener("click", () => { window.speechSynthesis.cancel(); });
+
   // Tik op een verborgen keyword-balkje om het handmatig goed te rekenen.
   // Werkt altijd tijdens een keyword-beurt, ook als er net niet geluisterd wordt.
   keywordsBox.addEventListener("click", (e) => {
@@ -550,7 +579,7 @@
   async function round369() {
     roundBanner.textContent = "Ronde · 3-6-9";
     clearStage();
-    await speak(`De eerste ronde: drie, zes, negen. Negen vragen. Alleen vraag drie, zes en negen leveren ${mode === "seconds" ? "tien seconden" : "een punt"} op. Wie goed antwoordt, houdt de beurt. Zeg pas, dan mag de volgende speler dezelfde vraag proberen.`);
+    await speak(`De eerste ronde: drie, zes, negen. Negen vragen. Alleen vraag drie, zes en negen leveren ${mode === "seconds" ? "tien seconden" : "een punt"} op. Wie goed antwoordt, houdt de beurt. Bij fout of pas mag de volgende speler dezelfde vraag proberen.`);
     const qs = pickFresh("369", BANK_369, N_369_QUESTIONS);
     let turnIdx = 0;
     for (let i = 0; i < qs.length; i++) {
@@ -565,7 +594,9 @@
           : `${player.name}, jij mag het proberen: `;
         let outcome = await askSingle(player, qs[i].q, qs[i].answers, { spokenPrefix: prefix });
         if (outcome === "wrong") {
-          const overridden = await wrongVerdict(`Helaas. Het juiste antwoord was ${qs[i].answers[0]}.`);
+          // antwoord niet verklappen: de volgende speler mag dezelfde vraag nog proberen
+          showResult(false, "❌ Fout");
+          const overridden = await wrongVerdict("Fout.");
           if (overridden) outcome = "correct";
         }
         if (outcome === "correct") {
@@ -575,15 +606,10 @@
           turnIdx = candidate; // houdt de beurt voor de volgende vraag
           break;
         }
-        if (outcome === "wrong") {
-          showResult(false, `❌ Antwoord: ${qs[i].answers[0]}`);
-          turnIdx = (candidate + 1) % players.length; // beurt schuift door
-          break;
-        }
-        // "pas" → volgende speler mag dezelfde vraag proberen
+        // fout of pas → volgende speler mag dezelfde vraag proberen
         if (attempt === players.length - 1) {
           showResult(false, `❌ Antwoord: ${qs[i].answers[0]}`);
-          await speak(`Niemand? Het antwoord was ${qs[i].answers[0]}.`);
+          await speak(`Niemand goed. Het antwoord was ${qs[i].answers[0]}.`);
           turnIdx = (turnIdx + 1) % players.length;
         } else {
           candidate = (candidate + 1) % players.length;
