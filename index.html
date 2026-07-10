@@ -111,7 +111,7 @@
     <select id="voiceSelect"></select>
     <button class="secondary" id="testVoiceBtn">Test</button>
   </div>
-  <div class="hint">Kies een "Google Nederlands" stem als die in de lijst staat — die klinkt een stuk natuurlijker dan de standaardstem van je toestel.</div>
+  <div class="hint" id="voiceHint">Kies een "Google Nederlands" stem als die in de lijst staat — die klinkt een stuk natuurlijker dan de standaardstem van je toestel.</div>
 
   <button class="primary" id="startBtn" disabled>Start spel</button>
 </div>
@@ -167,6 +167,7 @@
   const startBtn = document.getElementById("startBtn");
   const voiceSelect = document.getElementById("voiceSelect");
   const testVoiceBtn = document.getElementById("testVoiceBtn");
+  const voiceHint = document.getElementById("voiceHint");
 
   // ---------- Voice selection ----------
   function loadVoices() {
@@ -174,14 +175,14 @@
     availableVoices = window.speechSynthesis.getVoices();
     if (!availableVoices.length) return;
 
-    // Prefer Dutch voices, and within those prefer non-local (network/"Google") voices,
-    // which generally sound less robotic than the on-device default.
-    const nlVoices = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("nl"));
-    const others = availableVoices.filter(v => !(v.lang && v.lang.toLowerCase().startsWith("nl")));
-    const sorted = [...nlVoices, ...others];
+    // Only show Dutch voices — that's the only useful choice for this game.
+    // Fall back to showing everything only if the device genuinely has no Dutch voice at all.
+    let nlVoices = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("nl"));
+    const noDutchAvailable = nlVoices.length === 0;
+    const listToShow = noDutchAvailable ? availableVoices : nlVoices;
 
     voiceSelect.innerHTML = "";
-    sorted.forEach((v) => {
+    listToShow.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v.voiceURI;
       const tag = v.localService ? "" : " ☁";
@@ -189,7 +190,11 @@
       voiceSelect.appendChild(opt);
     });
 
-    const preferred = nlVoices.find(v => !v.localService && /google/i.test(v.name)) || nlVoices[0] || sorted[0];
+    voiceHint.textContent = noDutchAvailable
+      ? "Geen Nederlandse stem gevonden op dit toestel — alle beschikbare stemmen worden getoond."
+      : "Kies een \"Google Nederlands\" stem als die in de lijst staat — die klinkt een stuk natuurlijker dan de standaardstem van je toestel.";
+
+    const preferred = listToShow.find(v => !v.localService && /google/i.test(v.name)) || listToShow[0];
     if (preferred) {
       voiceSelect.value = preferred.voiceURI;
       selectedVoice = preferred;
