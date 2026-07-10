@@ -84,6 +84,13 @@
     padding: 10px 12px; font-size: 0.85rem; margin-bottom: 16px; max-width: 480px;
   }
   .progress { text-align: center; color: #666; font-size: 0.8rem; margin-top: 10px; }
+  select {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    border: 1px solid #333; background: #0f1115; color: #fff; font-size: 0.95rem;
+  }
+  .voice-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .voice-row select { flex: 1; }
+  .hint { font-size: 0.78rem; color: #6b7076; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -98,6 +105,14 @@
   <input type="text" id="playerNameInput" placeholder="bv. Tim" maxlength="20">
   <button class="primary" id="addPlayerBtn" style="margin-top:8px;">Speler toevoegen</button>
   <div class="players-list" id="playersList"></div>
+
+  <label>Stem</label>
+  <div class="voice-row">
+    <select id="voiceSelect"></select>
+    <button class="secondary" id="testVoiceBtn">Test</button>
+  </div>
+  <div class="hint">Kies een "Google Nederlands" stem als die in de lijst staat — die klinkt een stuk natuurlijker dan de standaardstem van je toestel.</div>
+
   <button class="primary" id="startBtn" disabled>Start spel</button>
 </div>
 
@@ -109,7 +124,7 @@
     <div class="transcript-box" id="transcriptBox">&nbsp;</div>
     <div class="result-banner" id="resultBanner">&nbsp;</div>
 
-    <button class="primary" id="listenBtn"><span class="mic-indicator" id="micDot"></span>Luister naar antwoord</button>
+    <button class="primary" id="listenBtn"><span class="mic-indicator" id="micDot"></span>Luister opnieuw</button>
     <div class="btn-row">
       <button class="secondary" id="repeatBtn">Herhaal vraag</button>
       <button class="secondary" id="skipBtn">Volgende vraag</button>
@@ -142,12 +157,57 @@
   let questionIndex = 0;
   let recognition = null;
   let listening = false;
+  let selectedVoice = null;
+  let availableVoices = [];
 
   // ---------- Setup screen ----------
   const playerNameInput = document.getElementById("playerNameInput");
   const addPlayerBtn = document.getElementById("addPlayerBtn");
   const playersList = document.getElementById("playersList");
   const startBtn = document.getElementById("startBtn");
+  const voiceSelect = document.getElementById("voiceSelect");
+  const testVoiceBtn = document.getElementById("testVoiceBtn");
+
+  // ---------- Voice selection ----------
+  function loadVoices() {
+    if (!hasTTS) return;
+    availableVoices = window.speechSynthesis.getVoices();
+    if (!availableVoices.length) return;
+
+    // Prefer Dutch voices, and within those prefer non-local (network/"Google") voices,
+    // which generally sound less robotic than the on-device default.
+    const nlVoices = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("nl"));
+    const others = availableVoices.filter(v => !(v.lang && v.lang.toLowerCase().startsWith("nl")));
+    const sorted = [...nlVoices, ...others];
+
+    voiceSelect.innerHTML = "";
+    sorted.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v.voiceURI;
+      const tag = v.localService ? "" : " ☁";
+      opt.textContent = `${v.name} (${v.lang})${tag}`;
+      voiceSelect.appendChild(opt);
+    });
+
+    const preferred = nlVoices.find(v => !v.localService && /google/i.test(v.name)) || nlVoices[0] || sorted[0];
+    if (preferred) {
+      voiceSelect.value = preferred.voiceURI;
+      selectedVoice = preferred;
+    }
+  }
+
+  if (hasTTS) {
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  voiceSelect.addEventListener("change", () => {
+    selectedVoice = availableVoices.find(v => v.voiceURI === voiceSelect.value) || null;
+  });
+
+  testVoiceBtn.addEventListener("click", () => {
+    speak("Hallo, dit is een test van deze stem.");
+  });
 
   function renderPlayers() {
     playersList.innerHTML = "";
@@ -206,7 +266,6 @@
   const listenBtn = document.getElementById("listenBtn");
   const repeatBtn = document.getElementById("repeatBtn");
   const skipBtn = document.getElementById("skipBtn");
-  const micDot = document.getElementById("micDot");
   const progressText = document.getElementById("progressText");
   const scoreboard = document.getElementById("scoreboard");
 
@@ -218,9 +277,15 @@
     if (!hasTTS) { if (onEnd) onEnd(); return; }
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = "nl-NL";
+    utter.lang = selectedVoice ? selectedVoice.lang : "nl-NL";
+    if (selectedVoice) utter.voice = selectedVoice;
     utter.rate = 1.0;
-    if (onEnd) utter.onend = onEnd;
+    let ended = false;
+    const finish = () => { if (!ended) { ended = true; if (onEnd) onEnd(); } };
+    utter.onend = finish;
+    // Some Android/Chrome combos occasionally never fire onend for short utterances —
+    // fall back so the game doesn't get stuck waiting to start listening.
+    utter.onerror = finish;
     window.speechSynthesis.speak(utter);
   }
 
@@ -234,13 +299,19 @@
     turnBanner.textContent = `${player.name} is aan de beurt`;
     questionText.textContent = q.question;
     progressText.textContent = `Vraag ${questionIndex + 1} van ${questionOrder.length} · Categorie: ${q.category}`;
-    listenBtn.disabled = false;
-    speak(`${player.name}, ${q.question}`);
+    listenBtn.disabled = true; // listening starts automatically once the question is read
+    speak(`${player.name}, ${q.question}`, () => {
+      startListening();
+    });
   }
 
   repeatBtn.addEventListener("click", () => {
+    if (listening && recognition) recognition.stop();
     const q = currentQuestion();
-    speak(q.question);
+    listenBtn.disabled = true;
+    speak(q.question, () => {
+      startListening();
+    });
   });
 
   skipBtn.addEventListener("click", () => nextTurn());
@@ -267,14 +338,9 @@
 
   function setListeningUI(isListening) {
     listening = isListening;
-    micDot.classList.toggle("live", isListening);
-    listenBtn.textContent = isListening ? "Aan het luisteren…" : "Luister naar antwoord";
-    listenBtn.querySelector ? null : null;
-    if (isListening) {
-      listenBtn.innerHTML = `<span class="mic-indicator live"></span>Aan het luisteren…`;
-    } else {
-      listenBtn.innerHTML = `<span class="mic-indicator" id="micDot"></span>Luister naar antwoord`;
-    }
+    listenBtn.innerHTML = isListening
+      ? `<span class="mic-indicator live"></span>Aan het luisteren…`
+      : `<span class="mic-indicator"></span>Luister opnieuw`;
   }
 
   listenBtn.addEventListener("click", () => {
@@ -283,10 +349,12 @@
       return;
     }
     if (listening) return;
+    window.speechSynthesis.cancel(); // in case TTS is still talking, let the user jump straight to answering
     startListening();
   });
 
   function startListening() {
+    listenBtn.disabled = false; // always allow a manual re-trigger once listening has kicked off or failed
     recognition = new SpeechRecognitionImpl();
     recognition.lang = "nl-NL";
     recognition.interimResults = false;
