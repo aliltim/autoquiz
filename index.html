@@ -52,6 +52,7 @@
     padding: 10px 16px; border-radius: 10px; border: 1px solid #444;
     background: transparent; color: #fff; font-size: 0.95rem; cursor: pointer;
   }
+  button.secondary:disabled { opacity: 0.35; cursor: default; }
   #game { display: none; width: 100%; max-width: 480px; }
   .round-banner {
     text-align: center; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase;
@@ -419,18 +420,22 @@
 
   $("repeatBtn").addEventListener("click", () => { if (activeListen) activeListen.finish({ transcripts: null, command: "repeat" }); });
   $("passBtn").addEventListener("click", () => { if (activeListen) activeListen.finish({ transcripts: null, command: "pass" }); });
-  // "Goed": tijdens het luisteren = direct goed; tijdens/kort na een fout-oordeel = alsnog goedkeuren.
-  $("forceBtn").addEventListener("click", () => {
-    if (activeListen) activeListen.finish({ transcripts: null, command: "force" });
-    else if (overrideResolve) overrideResolve();
-  });
+  // "Goed" is alleen actief wanneer een fout-oordeel teruggedraaid kan worden,
+  // dus als de jury het juiste antwoord kán kennen. Anders grijs en onklikbaar.
+  const forceBtn = $("forceBtn");
+  forceBtn.disabled = true;
+  forceBtn.addEventListener("click", () => { if (overrideResolve) overrideResolve(); });
 
   // Fout-oordeel uitspreken met een venster waarin "Goed" het oordeel omdraait.
-  async function wrongVerdict(text) {
+  // allowOverride=false (zoals in 3-6-9, waar het antwoord geheim blijft): knop blijft grijs.
+  async function wrongVerdict(text, allowOverride = true) {
+    if (!allowOverride) { await speak(text); return false; }
     let overridden = false;
     overrideResolve = () => { overridden = true; window.speechSynthesis.cancel(); };
+    forceBtn.disabled = false;
     await speak(text);
     if (!overridden) await wait(900); // korte nadenktijd voor de jury
+    forceBtn.disabled = true;
     overrideResolve = null;
     return overridden;
   }
@@ -618,10 +623,10 @@
           : `${player.name}, jij mag het proberen: `;
         let outcome = await askSingle(player, qs[i].q, qs[i].answers, { spokenPrefix: prefix });
         if (outcome === "wrong") {
-          // antwoord niet verklappen: de volgende speler mag dezelfde vraag nog proberen
+          // antwoord blijft geheim (volgende speler mag stelen) → jury kan niet oordelen,
+          // dus geen Goed-override in deze ronde
           showResult(false, "❌ Fout");
-          const overridden = await wrongVerdict("Fout.");
-          if (overridden) outcome = "correct";
+          await wrongVerdict("Fout.", false);
         }
         if (outcome === "correct") {
           if (bonus) award(player, VAL_369);
@@ -767,11 +772,14 @@
       if (activeListen) activeListen.finish({ transcripts: null, command: "noop" });
     };
     await speak(`${s.question} Om de beurt één antwoord. ${players[startIdx].name} begint.`);
+    let firstTurn = true;
     while (state.some(st => st === "hidden") && alive.some(a => a)) {
       if (!alive[cur]) { cur = (cur + 1) % players.length; continue; }
       const player = players[cur];
       turnBanner.textContent = `${player.name} — één antwoord`;
       renderScoreboard(player);
+      if (firstTurn) firstTurn = false;
+      else await speak(`${player.name}, jouw beurt.`);
       manualIdx = -1;
       let retries = 1;
       let outcome = null; // "hit" | "out"
