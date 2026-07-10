@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoquiz</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Roboto, Segoe UI, sans-serif;
+    background: #0f1115;
+    color: #f2f2f2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+  h1 { font-size: 1.4rem; margin: 8px 0 4px; text-align: center; }
+  .sub { color: #9aa0a6; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+  .card {
+    width: 100%; max-width: 480px;
+    background: #1a1d24; border-radius: 16px;
+    padding: 20px; margin-bottom: 16px;
+  }
+  label { display: block; font-size: 0.85rem; color: #9aa0a6; margin: 10px 0 4px; }
+  input[type=text] {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    border: 1px solid #333; background: #0f1115; color: #fff; font-size: 1rem;
+  }
+  .players-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .chip {
+    background: #262a33; padding: 6px 12px; border-radius: 999px;
+    font-size: 0.9rem; display: flex; align-items: center; gap: 6px;
+  }
+  .chip button { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 0.9rem; }
+  button.primary {
+    width: 100%; padding: 14px; border-radius: 12px; border: none;
+    background: #4f8cff; color: #fff; font-size: 1.05rem; font-weight: 600;
+    cursor: pointer; margin-top: 10px;
+  }
+  button.primary:disabled { opacity: 0.4; }
+  button.secondary {
+    padding: 10px 16px; border-radius: 10px; border: 1px solid #444;
+    background: transparent; color: #fff; font-size: 0.95rem; cursor: pointer;
+  }
+  #game { display: none; width: 100%; max-width: 480px; }
+  .turn-banner {
+    text-align: center; font-size: 1.1rem; font-weight: 600;
+    color: #4f8cff; margin-bottom: 8px;
+  }
+  .question-text {
+    font-size: 1.3rem; text-align: center; margin: 16px 0; min-height: 3.2em;
+  }
+  .status-text {
+    text-align: center; color: #9aa0a6; min-height: 1.4em; margin-bottom: 10px; font-size: 0.95rem;
+  }
+  .transcript-box {
+    background: #0f1115; border: 1px dashed #333; border-radius: 10px;
+    padding: 10px 12px; min-height: 1.4em; text-align: center; color: #ddd;
+    margin-bottom: 12px; font-size: 0.95rem;
+  }
+  .result-banner {
+    text-align: center; font-weight: 700; font-size: 1.15rem; margin: 8px 0; min-height: 1.4em;
+  }
+  .result-correct { color: #4caf50; }
+  .result-incorrect { color: #ff6b6b; }
+  .scoreboard { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0; }
+  .score-chip {
+    background: #262a33; border-radius: 10px; padding: 8px 12px; text-align: center; min-width: 78px;
+  }
+  .score-chip .name { font-size: 0.8rem; color: #9aa0a6; }
+  .score-chip .pts { font-size: 1.2rem; font-weight: 700; }
+  .btn-row { display: flex; gap: 10px; margin-top: 6px; }
+  .btn-row button { flex: 1; }
+  .mic-indicator {
+    width: 16px; height: 16px; border-radius: 50%; background: #444; display: inline-block; margin-right: 6px;
+  }
+  .mic-indicator.live { background: #ff4d4d; box-shadow: 0 0 8px 2px rgba(255,77,77,0.7); }
+  .warning {
+    background: #3a2a12; border: 1px solid #7a5a1e; color: #ffcf8a; border-radius: 10px;
+    padding: 10px 12px; font-size: 0.85rem; margin-bottom: 16px; max-width: 480px;
+  }
+  .progress { text-align: center; color: #666; font-size: 0.8rem; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h1>🚗 Autoquiz</h1>
+<div class="sub">Open kennisvragen — luister, antwoord hardop</div>
+
+<div id="compatWarning" class="warning" style="display:none;"></div>
+
+<div class="card" id="setup">
+  <label>Spelernaam toevoegen</label>
+  <input type="text" id="playerNameInput" placeholder="bv. Tim" maxlength="20">
+  <button class="primary" id="addPlayerBtn" style="margin-top:8px;">Speler toevoegen</button>
+  <div class="players-list" id="playersList"></div>
+  <button class="primary" id="startBtn" disabled>Start spel</button>
+</div>
+
+<div id="game">
+  <div class="card">
+    <div class="turn-banner" id="turnBanner">—</div>
+    <div class="question-text" id="questionText">Klaar om te beginnen…</div>
+    <div class="status-text" id="statusText"></div>
+    <div class="transcript-box" id="transcriptBox">&nbsp;</div>
+    <div class="result-banner" id="resultBanner">&nbsp;</div>
+
+    <button class="primary" id="listenBtn"><span class="mic-indicator" id="micDot"></span>Luister naar antwoord</button>
+    <div class="btn-row">
+      <button class="secondary" id="repeatBtn">Herhaal vraag</button>
+      <button class="secondary" id="skipBtn">Volgende vraag</button>
+    </div>
+    <div class="progress" id="progressText"></div>
+  </div>
+
+  <div class="scoreboard" id="scoreboard"></div>
+</div>
+
+<script src="questions.js"></script>
+<script src="match.js"></script>
+<script>
+(function () {
+  // ---------- Compatibility check ----------
+  const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const hasTTS = "speechSynthesis" in window;
+  const compatWarning = document.getElementById("compatWarning");
+  if (!SpeechRecognitionImpl || !hasTTS) {
+    compatWarning.style.display = "block";
+    compatWarning.textContent =
+      "Deze browser ondersteunt geen spraakherkenning en/of spraaksynthese. " +
+      "Gebruik Chrome op Android voor de beste ervaring.";
+  }
+
+  // ---------- State ----------
+  let players = []; // { name, score }
+  let currentPlayerIndex = 0;
+  let questionOrder = [];
+  let questionIndex = 0;
+  let recognition = null;
+  let listening = false;
+
+  // ---------- Setup screen ----------
+  const playerNameInput = document.getElementById("playerNameInput");
+  const addPlayerBtn = document.getElementById("addPlayerBtn");
+  const playersList = document.getElementById("playersList");
+  const startBtn = document.getElementById("startBtn");
+
+  function renderPlayers() {
+    playersList.innerHTML = "";
+    players.forEach((p, i) => {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.innerHTML = `${p.name} <button data-i="${i}">✕</button>`;
+      playersList.appendChild(chip);
+    });
+    startBtn.disabled = players.length < 1;
+  }
+
+  addPlayerBtn.addEventListener("click", () => {
+    const name = playerNameInput.value.trim();
+    if (!name) return;
+    players.push({ name, score: 0 });
+    playerNameInput.value = "";
+    renderPlayers();
+  });
+  playerNameInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addPlayerBtn.click();
+  });
+  playersList.addEventListener("click", (e) => {
+    if (e.target.tagName === "BUTTON") {
+      players.splice(Number(e.target.dataset.i), 1);
+      renderPlayers();
+    }
+  });
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  startBtn.addEventListener("click", () => {
+    if (players.length < 1) return;
+    questionOrder = shuffle(QUESTION_BANK.map((_, i) => i));
+    questionIndex = 0;
+    currentPlayerIndex = 0;
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    renderScoreboard();
+    startTurn();
+  });
+
+  // ---------- Game screen ----------
+  const turnBanner = document.getElementById("turnBanner");
+  const questionText = document.getElementById("questionText");
+  const statusText = document.getElementById("statusText");
+  const transcriptBox = document.getElementById("transcriptBox");
+  const resultBanner = document.getElementById("resultBanner");
+  const listenBtn = document.getElementById("listenBtn");
+  const repeatBtn = document.getElementById("repeatBtn");
+  const skipBtn = document.getElementById("skipBtn");
+  const micDot = document.getElementById("micDot");
+  const progressText = document.getElementById("progressText");
+  const scoreboard = document.getElementById("scoreboard");
+
+  function currentQuestion() {
+    return QUESTION_BANK[questionOrder[questionIndex % questionOrder.length]];
+  }
+
+  function speak(text, onEnd) {
+    if (!hasTTS) { if (onEnd) onEnd(); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "nl-NL";
+    utter.rate = 1.0;
+    if (onEnd) utter.onend = onEnd;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function startTurn() {
+    resultBanner.textContent = " ";
+    resultBanner.className = "result-banner";
+    transcriptBox.textContent = " ";
+    statusText.textContent = "";
+    const player = players[currentPlayerIndex];
+    const q = currentQuestion();
+    turnBanner.textContent = `${player.name} is aan de beurt`;
+    questionText.textContent = q.question;
+    progressText.textContent = `Vraag ${questionIndex + 1} van ${questionOrder.length} · Categorie: ${q.category}`;
+    listenBtn.disabled = false;
+    speak(`${player.name}, ${q.question}`);
+  }
+
+  repeatBtn.addEventListener("click", () => {
+    const q = currentQuestion();
+    speak(q.question);
+  });
+
+  skipBtn.addEventListener("click", () => nextTurn());
+
+  function nextTurn() {
+    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    questionIndex++;
+    if (questionIndex >= questionOrder.length) {
+      questionOrder = shuffle(QUESTION_BANK.map((_, i) => i));
+      questionIndex = 0;
+    }
+    startTurn();
+  }
+
+  function renderScoreboard() {
+    scoreboard.innerHTML = "";
+    players.forEach((p) => {
+      const chip = document.createElement("div");
+      chip.className = "score-chip";
+      chip.innerHTML = `<div class="name">${p.name}</div><div class="pts">${p.score}</div>`;
+      scoreboard.appendChild(chip);
+    });
+  }
+
+  function setListeningUI(isListening) {
+    listening = isListening;
+    micDot.classList.toggle("live", isListening);
+    listenBtn.textContent = isListening ? "Aan het luisteren…" : "Luister naar antwoord";
+    listenBtn.querySelector ? null : null;
+    if (isListening) {
+      listenBtn.innerHTML = `<span class="mic-indicator live"></span>Aan het luisteren…`;
+    } else {
+      listenBtn.innerHTML = `<span class="mic-indicator" id="micDot"></span>Luister naar antwoord`;
+    }
+  }
+
+  listenBtn.addEventListener("click", () => {
+    if (!SpeechRecognitionImpl) {
+      statusText.textContent = "Spraakherkenning niet beschikbaar in deze browser.";
+      return;
+    }
+    if (listening) return;
+    startListening();
+  });
+
+  function startListening() {
+    recognition = new SpeechRecognitionImpl();
+    recognition.lang = "nl-NL";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+
+    setListeningUI(true);
+    statusText.textContent = "Spreek je antwoord uit…";
+
+    let handled = false;
+    const timeout = setTimeout(() => {
+      if (!handled) {
+        handled = true;
+        recognition.stop();
+      }
+    }, 8000);
+
+    recognition.onresult = (event) => {
+      handled = true;
+      clearTimeout(timeout);
+      const results = event.results[0];
+      let transcripts = [];
+      for (let i = 0; i < results.length; i++) transcripts.push(results[i].transcript);
+      transcriptBox.textContent = `Gehoord: "${transcripts[0]}"`;
+      const q = currentQuestion();
+      const isCorrect = transcripts.some((t) => isCorrectAnswer(t, q.answers));
+      handleAnswer(isCorrect, q);
+    };
+
+    recognition.onerror = (event) => {
+      handled = true;
+      clearTimeout(timeout);
+      setListeningUI(false);
+      statusText.textContent = `Kon je niet verstaan (${event.error}). Probeer opnieuw.`;
+    };
+
+    recognition.onend = () => {
+      setListeningUI(false);
+    };
+
+    recognition.start();
+  }
+
+  function handleAnswer(isCorrect, q) {
+    const player = players[currentPlayerIndex];
+    if (isCorrect) {
+      player.score += 1;
+      resultBanner.textContent = "✅ Correct!";
+      resultBanner.className = "result-banner result-correct";
+      speak("Correct!", () => setTimeout(nextTurn, 1200));
+    } else {
+      resultBanner.textContent = `❌ Fout. Het juiste antwoord was: ${q.answers[0]}`;
+      resultBanner.className = "result-banner result-incorrect";
+      speak(`Helaas, het juiste antwoord was ${q.answers[0]}`, () => setTimeout(nextTurn, 1500));
+    }
+    renderScoreboard();
+    listenBtn.disabled = true;
+  }
+
+})();
+</script>
+</body>
+</html>
