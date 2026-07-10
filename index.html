@@ -434,51 +434,67 @@
     }
   }
 
-  // ---------- Keyword-beurt (Open Deur, Ingelijst) ----------
-  async function keywordTurn(player, spokenIntro, keywords, valuePer, { repeatText = null } = {}) {
-    const state = keywords.map(() => "hidden");
-    renderKeywordSlots(keywords, state);
+  // ---------- Keyword-beurt (Open Deur, Ingelijst) met overname ----------
+  // Eén poging van één speler op een gedeelde state. Muteert state, kent punten toe.
+  async function keywordAttempt(player, keywords, state, valuePer, spokenIntro, repeatText, maxMisses) {
     turnBanner.textContent = `${player.name} is aan de beurt`;
     renderScoreboard(player);
+    renderKeywordSlots(keywords, state);
     currentSlotHandler = (i) => { if (activeListen) activeListen.finish({ transcripts: null, command: "manual", manualIndex: i }); };
-    await speak(spokenIntro);
+    if (spokenIntro) await speak(spokenIntro);
     let misses = 0;
-    let found = 0;
-    while (found < keywords.length && misses < MAX_MISSES) {
+    const remainingCount = () => state.filter(s => s === "hidden").length;
+    while (remainingCount() > 0 && misses < maxMisses) {
       const res = await listenOnce();
-      if (res.command === "repeat") { await speak(repeatText || spokenIntro); continue; }
+      if (res.command === "repeat") { await speak(repeatText); continue; }
       if (res.command === "pass") break;
       if (res.command === "force") { statusText.textContent = "Tik op het balkje van het antwoord dat gezegd is."; continue; }
       if (res.command === "manual" && state[res.manualIndex] === "hidden") {
         state[res.manualIndex] = "found";
-        misses = 0; found++;
+        misses = 0;
         award(player, valuePer);
         renderKeywordSlots(keywords, state);
-        const left = keywords.length - found;
+        const left = remainingCount();
         showResult(true, `✅ ${keywords[res.manualIndex].label}`);
         await speak(`Goed gerekend: ${keywords[res.manualIndex].label}.` + (left > 0 ? ` Nog ${left}.` : " Alles gevonden!"));
         continue;
       }
       if (!res.transcripts) { misses++; continue; }
-      const remaining = keywords.map((kw, i) => ({ kw, i })).filter(x => state[x.i] === "hidden");
       const hits = [];
       for (const t of res.transcripts) {
-        for (const { kw, i } of remaining) {
+        keywords.forEach((kw, i) => {
           if (state[i] === "hidden" && isCorrectAnswer(t, kw.variants)) { state[i] = "found"; hits.push(kw.label); }
-        }
+        });
       }
       if (hits.length > 0) {
         misses = 0;
-        found += hits.length;
         hits.forEach(() => award(player, valuePer));
         renderKeywordSlots(keywords, state);
-        const left = keywords.length - found;
+        const left = remainingCount();
         showResult(true, `✅ ${hits.join(", ")}`);
         await speak(`Juist: ${hits.join(", en ")}.` + (left > 0 ? ` Nog ${left}.` : " Alles gevonden!"));
       } else {
         misses++;
         showResult(false, "❌ Niet gevonden");
-        if (misses < MAX_MISSES) await speak("Nee. Probeer nog eens, of zeg: pas.");
+        if (misses < maxMisses) await speak("Nee. Probeer nog eens, of zeg: pas.");
+      }
+    }
+  }
+
+  // Hoofdbeurt + overname: bij "pas" of missers gaan de open antwoorden door
+  // naar de volgende spelers, tot alles gevonden is of iedereen aan de beurt was.
+  async function keywordRound(mainPlayer, keywords, valuePer, spokenIntro, repeatText) {
+    const state = keywords.map(() => "hidden");
+    renderKeywordSlots(keywords, state);
+    await keywordAttempt(mainPlayer, keywords, state, valuePer, spokenIntro, repeatText, MAX_MISSES);
+    if (players.length > 1) {
+      const startIdx = players.indexOf(mainPlayer);
+      for (let k = 1; k < players.length; k++) {
+        const remaining = state.filter(s => s === "hidden").length;
+        if (remaining === 0) break;
+        const stealer = players[(startIdx + k) % players.length];
+        await speak(`${stealer.name}, jij mag overnemen. Er ${remaining === 1 ? "staat nog één antwoord" : "staan nog " + remaining + " antwoorden"} open.`);
+        await keywordAttempt(stealer, keywords, state, valuePer, null, repeatText, 1);
       }
     }
     // onthulling
@@ -488,7 +504,6 @@
     renderKeywordSlots(keywords, state);
     if (missed.length > 0) await speak(`De overige antwoorden waren: ${missed.map(k => k.label).join(", ")}.`);
     await wait(600);
-    return found;
   }
 
   // ---------- Rondes ----------
@@ -520,14 +535,14 @@
   async function roundOpenDeur() {
     roundBanner.textContent = "Ronde · Open Deur";
     clearStage();
-    await speak(`De Open Deur. Iedere speler krijgt een onderwerp met vier sleutelwoorden. Elk goed antwoord is ${mode === "seconds" ? "twintig seconden" : "twee punten"} waard. Zeg pas als je het niet meer weet.`);
+    await speak(`De Open Deur. Iedere speler krijgt een onderwerp met vier sleutelwoorden. Elk goed antwoord is ${mode === "seconds" ? "twintig seconden" : "twee punten"} waard. Zeg pas als je het niet meer weet — dan mogen de anderen overnemen.`);
     const topics = pickFresh("opendeur", BANK_OPENDEUR, players.length);
     for (let i = 0; i < players.length && i < topics.length; i++) {
       clearStage();
       const t = topics[i];
       questionText.textContent = t.topic;
       progressText.textContent = `Open Deur · ${t.topic}`;
-      await keywordTurn(players[i], `${players[i].name}. Jouw onderwerp: ${t.topic}. ${t.prompt}`, t.keywords, VAL_OPENDEUR, { repeatText: t.prompt });
+      await keywordRound(players[i], t.keywords, VAL_OPENDEUR, `${players[i].name}. Jouw onderwerp: ${t.topic}. ${t.prompt}`, t.prompt);
     }
   }
 
@@ -608,14 +623,14 @@
   async function roundIngelijst() {
     roundBanner.textContent = "Ronde · Ingelijst";
     clearStage();
-    await speak(`Ingelijst. Iedere speler krijgt een beroemd persoon in de lijst. Noem zoveel mogelijk van de vijf feiten die wij zoeken. Elk goed antwoord: ${mode === "seconds" ? "vijftien seconden" : "punten"}.`);
+    await speak(`Ingelijst. Iedere speler krijgt een beroemd persoon in de lijst. Noem zoveel mogelijk van de vijf feiten die wij zoeken. Elk goed antwoord: ${mode === "seconds" ? "vijftien seconden" : "punten"}. Wie past, geeft de rest door aan de anderen.`);
     const subjects = pickFresh("ingelijst", BANK_INGELIJST, players.length);
     for (let i = 0; i < players.length && i < subjects.length; i++) {
       clearStage();
       const s = subjects[i];
       questionText.textContent = `🖼 ${s.subject}`;
       progressText.textContent = `Ingelijst · ${s.subject}`;
-      await keywordTurn(players[i], `${players[i].name}. In de lijst: ${s.subject}. Wat weet je over deze persoon?`, s.keywords, VAL_INGELIJST, { repeatText: `Wat weet je over ${s.subject}?` });
+      await keywordRound(players[i], s.keywords, VAL_INGELIJST, `${players[i].name}. In de lijst: ${s.subject}. Wat weet je over deze persoon?`, `Wat weet je over ${s.subject}?`);
     }
   }
 
