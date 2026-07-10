@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Autoquiz</title>
+<title>De Slimste Onderweg</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -36,6 +36,12 @@
     font-size: 0.9rem; display: flex; align-items: center; gap: 6px;
   }
   .chip button { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 0.9rem; }
+  .opt-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 2px; }
+  .opt {
+    padding: 8px 12px; border-radius: 10px; border: 1px solid #333;
+    background: #0f1115; color: #9aa0a6; font-size: 0.9rem; cursor: pointer; user-select: none;
+  }
+  .opt.on { border-color: #4f8cff; color: #fff; background: #1c2740; }
   button.primary {
     width: 100%; padding: 14px; border-radius: 12px; border: none;
     background: #4f8cff; color: #fff; font-size: 1.05rem; font-weight: 600;
@@ -47,13 +53,24 @@
     background: transparent; color: #fff; font-size: 0.95rem; cursor: pointer;
   }
   #game { display: none; width: 100%; max-width: 480px; }
+  .round-banner {
+    text-align: center; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase;
+    color: #e3b341; margin-bottom: 2px; min-height: 1em;
+  }
   .turn-banner {
     text-align: center; font-size: 1.1rem; font-weight: 600;
-    color: #4f8cff; margin-bottom: 8px;
+    color: #4f8cff; margin-bottom: 8px; min-height: 1.3em;
   }
   .question-text {
-    font-size: 1.3rem; text-align: center; margin: 16px 0; min-height: 3.2em;
+    font-size: 1.2rem; text-align: center; margin: 14px 0; min-height: 3em; white-space: pre-line;
   }
+  .keywords { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+  .kw {
+    background: #0f1115; border: 1px solid #2a2e38; border-radius: 8px;
+    padding: 8px 12px; font-size: 0.95rem; color: #666; letter-spacing: 1px;
+  }
+  .kw.found { color: #4caf50; border-color: #2e5d31; letter-spacing: normal; }
+  .kw.revealed { color: #ff9d76; border-color: #5d3a2e; letter-spacing: normal; }
   .status-text {
     text-align: center; color: #9aa0a6; min-height: 1.4em; margin-bottom: 10px; font-size: 0.95rem;
   }
@@ -63,7 +80,7 @@
     margin-bottom: 12px; font-size: 0.95rem;
   }
   .result-banner {
-    text-align: center; font-weight: 700; font-size: 1.15rem; margin: 8px 0; min-height: 1.4em;
+    text-align: center; font-weight: 700; font-size: 1.1rem; margin: 8px 0; min-height: 1.4em;
   }
   .result-correct { color: #4caf50; }
   .result-incorrect { color: #ff6b6b; }
@@ -71,32 +88,32 @@
   .score-chip {
     background: #262a33; border-radius: 10px; padding: 8px 12px; text-align: center; min-width: 78px;
   }
+  .score-chip.active { outline: 2px solid #4f8cff; }
   .score-chip .name { font-size: 0.8rem; color: #9aa0a6; }
   .score-chip .pts { font-size: 1.2rem; font-weight: 700; }
+  .clocks { display: none; justify-content: center; gap: 16px; margin: 10px 0; }
+  .clock { text-align: center; background: #262a33; border-radius: 12px; padding: 10px 18px; min-width: 110px; }
+  .clock .name { font-size: 0.85rem; color: #9aa0a6; }
+  .clock .time { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .clock.running .time { color: #e3b341; }
+  .clock.dead .time { color: #ff6b6b; }
   .btn-row { display: flex; gap: 10px; margin-top: 6px; }
   .btn-row button { flex: 1; }
   .mic-indicator {
-    width: 16px; height: 16px; border-radius: 50%; background: #444; display: inline-block; margin-right: 6px;
+    width: 14px; height: 14px; border-radius: 50%; background: #444; display: inline-block; margin-right: 6px;
   }
   .mic-indicator.live { background: #ff4d4d; box-shadow: 0 0 8px 2px rgba(255,77,77,0.7); }
   .warning {
     background: #3a2a12; border: 1px solid #7a5a1e; color: #ffcf8a; border-radius: 10px;
     padding: 10px 12px; font-size: 0.85rem; margin-bottom: 16px; max-width: 480px;
   }
-  .progress { text-align: center; color: #666; font-size: 0.8rem; margin-top: 10px; }
-  select {
-    width: 100%; padding: 10px 12px; border-radius: 10px;
-    border: 1px solid #333; background: #0f1115; color: #fff; font-size: 0.95rem;
-  }
-  .voice-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-  .voice-row select { flex: 1; }
-  .hint { font-size: 0.78rem; color: #6b7076; margin-top: 6px; }
+  .progress { text-align: center; color: #666; font-size: 0.8rem; margin-top: 10px; min-height: 1.2em; }
 </style>
 </head>
 <body>
 
-<h1>🚗 Autoquiz</h1>
-<div class="sub">Open kennisvragen — luister, antwoord hardop</div>
+<h1>🚗 De Slimste Onderweg</h1>
+<div class="sub">Alle rondes, volledig op stem — luister en antwoord hardop</div>
 
 <div id="compatWarning" class="warning" style="display:none;"></div>
 
@@ -106,28 +123,42 @@
   <button class="primary" id="addPlayerBtn" style="margin-top:8px;">Speler toevoegen</button>
   <div class="players-list" id="playersList"></div>
 
-  <label>Stem</label>
-  <div class="voice-row">
-    <select id="voiceSelect"></select>
-    <button class="secondary" id="testVoiceBtn">Test</button>
+  <label>Puntentelling</label>
+  <div class="opt-row" id="modeRow">
+    <div class="opt on" data-mode="seconds">⏱ Seconden (zoals op tv)</div>
+    <div class="opt" data-mode="points">🔢 Punten (simpel)</div>
   </div>
-  <div class="hint" id="voiceHint">Kies een "Google Nederlands" stem als die in de lijst staat — die klinkt een stuk natuurlijker dan de standaardstem van je toestel.</div>
+
+  <label>Rondes</label>
+  <div class="opt-row" id="roundsRow">
+    <div class="opt on" data-round="r369">3-6-9</div>
+    <div class="opt on" data-round="opendeur">Open Deur</div>
+    <div class="opt on" data-round="puzzel">De Puzzel</div>
+    <div class="opt on" data-round="geheugen">Collectief Geheugen</div>
+    <div class="opt on" data-round="ingelijst">Ingelijst</div>
+    <div class="opt on" data-round="finale">Finale</div>
+  </div>
 
   <button class="primary" id="startBtn" disabled>Start spel</button>
 </div>
 
 <div id="game">
   <div class="card">
+    <div class="round-banner" id="roundBanner"></div>
     <div class="turn-banner" id="turnBanner">—</div>
-    <div class="question-text" id="questionText">Klaar om te beginnen…</div>
+    <div class="question-text" id="questionText"></div>
+    <div class="keywords" id="keywordsBox"></div>
+    <div class="clocks" id="clocksBox">
+      <div class="clock" id="clockA"><div class="name"></div><div class="time"></div></div>
+      <div class="clock" id="clockB"><div class="name"></div><div class="time"></div></div>
+    </div>
     <div class="status-text" id="statusText"></div>
     <div class="transcript-box" id="transcriptBox">&nbsp;</div>
     <div class="result-banner" id="resultBanner">&nbsp;</div>
 
-    <button class="primary" id="listenBtn"><span class="mic-indicator" id="micDot"></span>Luister opnieuw</button>
     <div class="btn-row">
-      <button class="secondary" id="repeatBtn">Herhaal vraag</button>
-      <button class="secondary" id="skipBtn">Volgende vraag</button>
+      <button class="secondary" id="repeatBtn">🔁 Herhaal</button>
+      <button class="secondary" id="passBtn">⏭ Pas</button>
     </div>
     <div class="progress" id="progressText"></div>
   </div>
@@ -139,7 +170,7 @@
 <script src="match.js"></script>
 <script>
 (function () {
-  // ---------- Compatibility check ----------
+  // ---------- Compatibility ----------
   const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition;
   const hasTTS = "speechSynthesis" in window;
   const compatWarning = document.getElementById("compatWarning");
@@ -150,69 +181,30 @@
       "Gebruik Chrome op Android voor de beste ervaring.";
   }
 
+  // ---------- Config ----------
+  const START_SECONDS = 60;
+  const VAL_369 = 10, VAL_OPENDEUR = 20, VAL_PUZZEL = 30, VAL_GEHEUGEN = 15, VAL_INGELIJST = 15;
+  const N_369_QUESTIONS = 15;
+  const PUZZELS_PER_PLAYER = 2;
+  const MAX_MISSES = 2; // opeenvolgende niet-gematchte antwoorden voor keyword-beurten
+
   // ---------- State ----------
-  let players = []; // { name, score }
-  let currentPlayerIndex = 0;
-  let questionOrder = [];
-  let questionIndex = 0;
-  let recognition = null;
-  let listening = false;
-  let selectedVoice = null;
-  let availableVoices = [];
+  let players = [];        // { name, score }
+  let mode = "seconds";    // "seconds" | "points"
+  let enabledRounds = { r369: true, opendeur: true, puzzel: true, geheugen: true, ingelijst: true, finale: true };
+  let activeListen = null; // { recognition, finish } — zodat knoppen kunnen ingrijpen
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const roundBanner = $("roundBanner"), turnBanner = $("turnBanner"),
+        questionText = $("questionText"), keywordsBox = $("keywordsBox"),
+        statusText = $("statusText"), transcriptBox = $("transcriptBox"),
+        resultBanner = $("resultBanner"), progressText = $("progressText"),
+        scoreboard = $("scoreboard"), clocksBox = $("clocksBox");
 
   // ---------- Setup screen ----------
-  const playerNameInput = document.getElementById("playerNameInput");
-  const addPlayerBtn = document.getElementById("addPlayerBtn");
-  const playersList = document.getElementById("playersList");
-  const startBtn = document.getElementById("startBtn");
-  const voiceSelect = document.getElementById("voiceSelect");
-  const testVoiceBtn = document.getElementById("testVoiceBtn");
-  const voiceHint = document.getElementById("voiceHint");
-
-  // ---------- Voice selection ----------
-  function loadVoices() {
-    if (!hasTTS) return;
-    availableVoices = window.speechSynthesis.getVoices();
-    if (!availableVoices.length) return;
-
-    // Only show Dutch voices — that's the only useful choice for this game.
-    // Fall back to showing everything only if the device genuinely has no Dutch voice at all.
-    let nlVoices = availableVoices.filter(v => v.lang && v.lang.toLowerCase().startsWith("nl"));
-    const noDutchAvailable = nlVoices.length === 0;
-    const listToShow = noDutchAvailable ? availableVoices : nlVoices;
-
-    voiceSelect.innerHTML = "";
-    listToShow.forEach((v) => {
-      const opt = document.createElement("option");
-      opt.value = v.voiceURI;
-      const tag = v.localService ? "" : " ☁";
-      opt.textContent = `${v.name} (${v.lang})${tag}`;
-      voiceSelect.appendChild(opt);
-    });
-
-    voiceHint.textContent = noDutchAvailable
-      ? "Geen Nederlandse stem gevonden op dit toestel — alle beschikbare stemmen worden getoond."
-      : "Kies een \"Google Nederlands\" stem als die in de lijst staat — die klinkt een stuk natuurlijker dan de standaardstem van je toestel.";
-
-    const preferred = listToShow.find(v => !v.localService && /google/i.test(v.name)) || listToShow[0];
-    if (preferred) {
-      voiceSelect.value = preferred.voiceURI;
-      selectedVoice = preferred;
-    }
-  }
-
-  if (hasTTS) {
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-  }
-
-  voiceSelect.addEventListener("change", () => {
-    selectedVoice = availableVoices.find(v => v.voiceURI === voiceSelect.value) || null;
-  });
-
-  testVoiceBtn.addEventListener("click", () => {
-    speak("Hallo, dit is een test van deze stem.");
-  });
+  const playerNameInput = $("playerNameInput"), addPlayerBtn = $("addPlayerBtn"),
+        playersList = $("playersList"), startBtn = $("startBtn");
 
   function renderPlayers() {
     playersList.innerHTML = "";
@@ -224,7 +216,6 @@
     });
     startBtn.disabled = players.length < 1;
   }
-
   addPlayerBtn.addEventListener("click", () => {
     const name = playerNameInput.value.trim();
     if (!name) return;
@@ -232,16 +223,22 @@
     playerNameInput.value = "";
     renderPlayers();
   });
-  playerNameInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") addPlayerBtn.click();
-  });
+  playerNameInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addPlayerBtn.click(); });
   playersList.addEventListener("click", (e) => {
-    if (e.target.tagName === "BUTTON") {
-      players.splice(Number(e.target.dataset.i), 1);
-      renderPlayers();
-    }
+    if (e.target.tagName === "BUTTON") { players.splice(Number(e.target.dataset.i), 1); renderPlayers(); }
+  });
+  $("modeRow").addEventListener("click", (e) => {
+    const el = e.target.closest(".opt"); if (!el) return;
+    mode = el.dataset.mode;
+    [...$("modeRow").children].forEach(c => c.classList.toggle("on", c === el));
+  });
+  $("roundsRow").addEventListener("click", (e) => {
+    const el = e.target.closest(".opt"); if (!el) return;
+    el.classList.toggle("on");
+    enabledRounds[el.dataset.round] = el.classList.contains("on");
   });
 
+  // ---------- Utils ----------
   function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -250,174 +247,511 @@
     }
     return a;
   }
+  const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
-  startBtn.addEventListener("click", () => {
-    if (players.length < 1) return;
-    questionOrder = shuffle(QUESTION_BANK.map((_, i) => i));
-    questionIndex = 0;
-    currentPlayerIndex = 0;
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("game").style.display = "block";
+  function speak(text) {
+    return new Promise((resolve) => {
+      if (!hasTTS) return resolve();
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "nl-NL";
+      utter.rate = 1.0;
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      utter.onend = finish;
+      utter.onerror = finish;
+      // vangnet: onend blijft op sommige Android/Chrome-combo's uit
+      const est = 4000 + text.length * 90;
+      setTimeout(finish, est);
+      window.speechSynthesis.speak(utter);
+    });
+  }
+
+  // Luister één keer. Resolvet {transcripts: string[]|null, command: "pass"|"repeat"|null}
+  // Knoppen (Herhaal/Pas) kunnen de luisterbeurt onderbreken.
+  function listenOnce(timeoutMs = 9000) {
+    return new Promise((resolve) => {
+      if (!SpeechRecognitionImpl) {
+        statusText.textContent = "Spraakherkenning niet beschikbaar.";
+        // zonder STT is spelen zinloos, maar blijf niet hangen:
+        return setTimeout(() => resolve({ transcripts: null, command: null }), 1500);
+      }
+      window.speechSynthesis.cancel();
+      const recognition = new SpeechRecognitionImpl();
+      recognition.lang = "nl-NL";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 3;
+
+      let done = false;
+      const finish = (result) => {
+        if (done) return;
+        done = true;
+        activeListen = null;
+        clearTimeout(timer);
+        try { recognition.abort(); } catch (e) {}
+        setMic(false);
+        resolve(result);
+      };
+      activeListen = { finish };
+
+      const timer = setTimeout(() => finish({ transcripts: null, command: null }), timeoutMs);
+
+      recognition.onresult = (event) => {
+        const results = event.results[0];
+        const transcripts = [];
+        for (let i = 0; i < results.length; i++) transcripts.push(results[i].transcript);
+        transcriptBox.textContent = `Gehoord: "${transcripts[0]}"`;
+        const command = transcripts.map(detectCommand).find(c => c) || null;
+        finish({ transcripts, command });
+      };
+      recognition.onerror = () => finish({ transcripts: null, command: null });
+      recognition.onend = () => finish({ transcripts: null, command: null });
+
+      setMic(true);
+      statusText.textContent = "Spreek je antwoord uit…";
+      recognition.start();
+    });
+  }
+
+  function setMic(on) {
+    statusText.innerHTML = on
+      ? `<span class="mic-indicator live"></span>Aan het luisteren…`
+      : statusText.textContent;
+  }
+
+  $("repeatBtn").addEventListener("click", () => { if (activeListen) activeListen.finish({ transcripts: null, command: "repeat" }); });
+  $("passBtn").addEventListener("click", () => { if (activeListen) activeListen.finish({ transcripts: null, command: "pass" }); });
+
+  // ---------- Score ----------
+  function award(player, seconds) {
+    if (mode === "seconds") player.score += seconds;
+    else player.score += Math.max(1, Math.round(seconds / 10));
     renderScoreboard();
-    startTurn();
-  });
-
-  // ---------- Game screen ----------
-  const turnBanner = document.getElementById("turnBanner");
-  const questionText = document.getElementById("questionText");
-  const statusText = document.getElementById("statusText");
-  const transcriptBox = document.getElementById("transcriptBox");
-  const resultBanner = document.getElementById("resultBanner");
-  const listenBtn = document.getElementById("listenBtn");
-  const repeatBtn = document.getElementById("repeatBtn");
-  const skipBtn = document.getElementById("skipBtn");
-  const progressText = document.getElementById("progressText");
-  const scoreboard = document.getElementById("scoreboard");
-
-  function currentQuestion() {
-    return QUESTION_BANK[questionOrder[questionIndex % questionOrder.length]];
   }
-
-  function speak(text, onEnd) {
-    if (!hasTTS) { if (onEnd) onEnd(); return; }
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = selectedVoice ? selectedVoice.lang : "nl-NL";
-    if (selectedVoice) utter.voice = selectedVoice;
-    utter.rate = 1.0;
-    let ended = false;
-    const finish = () => { if (!ended) { ended = true; if (onEnd) onEnd(); } };
-    utter.onend = finish;
-    // Some Android/Chrome combos occasionally never fire onend for short utterances —
-    // fall back so the game doesn't get stuck waiting to start listening.
-    utter.onerror = finish;
-    window.speechSynthesis.speak(utter);
-  }
-
-  function startTurn() {
-    resultBanner.textContent = " ";
-    resultBanner.className = "result-banner";
-    transcriptBox.textContent = " ";
-    statusText.textContent = "";
-    const player = players[currentPlayerIndex];
-    const q = currentQuestion();
-    turnBanner.textContent = `${player.name} is aan de beurt`;
-    questionText.textContent = q.question;
-    progressText.textContent = `Vraag ${questionIndex + 1} van ${questionOrder.length} · Categorie: ${q.category}`;
-    listenBtn.disabled = true; // listening starts automatically once the question is read
-    speak(`${player.name}, ${q.question}`, () => {
-      startListening();
-    });
-  }
-
-  repeatBtn.addEventListener("click", () => {
-    if (listening && recognition) recognition.stop();
-    const q = currentQuestion();
-    listenBtn.disabled = true;
-    speak(q.question, () => {
-      startListening();
-    });
-  });
-
-  skipBtn.addEventListener("click", () => nextTurn());
-
-  function nextTurn() {
-    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-    questionIndex++;
-    if (questionIndex >= questionOrder.length) {
-      questionOrder = shuffle(QUESTION_BANK.map((_, i) => i));
-      questionIndex = 0;
-    }
-    startTurn();
-  }
-
-  function renderScoreboard() {
+  function scoreLabel() { return mode === "seconds" ? "sec" : "pt"; }
+  function renderScoreboard(activePlayer) {
     scoreboard.innerHTML = "";
     players.forEach((p) => {
       const chip = document.createElement("div");
-      chip.className = "score-chip";
-      chip.innerHTML = `<div class="name">${p.name}</div><div class="pts">${p.score}</div>`;
+      chip.className = "score-chip" + (p === activePlayer ? " active" : "");
+      chip.innerHTML = `<div class="name">${p.name}</div><div class="pts">${p.score} ${scoreLabel()}</div>`;
       scoreboard.appendChild(chip);
     });
   }
 
-  function setListeningUI(isListening) {
-    listening = isListening;
-    listenBtn.innerHTML = isListening
-      ? `<span class="mic-indicator live"></span>Aan het luisteren…`
-      : `<span class="mic-indicator"></span>Luister opnieuw`;
+  // ---------- UI helpers ----------
+  function clearStage() {
+    questionText.textContent = "";
+    keywordsBox.innerHTML = "";
+    transcriptBox.innerHTML = "&nbsp;";
+    resultBanner.innerHTML = "&nbsp;";
+    resultBanner.className = "result-banner";
+    statusText.textContent = "";
+    progressText.textContent = "";
+  }
+  function showResult(ok, text) {
+    resultBanner.textContent = text;
+    resultBanner.className = "result-banner " + (ok ? "result-correct" : "result-incorrect");
+  }
+  function renderKeywordSlots(keywords, state) {
+    // state[i]: "hidden" | "found" | "revealed"
+    keywordsBox.innerHTML = "";
+    keywords.forEach((kw, i) => {
+      const div = document.createElement("div");
+      div.className = "kw " + (state[i] === "hidden" ? "" : state[i]);
+      div.textContent = state[i] === "hidden" ? "■".repeat(Math.min(14, Math.max(6, kw.label.length))) : kw.label;
+      keywordsBox.appendChild(div);
+    });
   }
 
-  listenBtn.addEventListener("click", () => {
-    if (!SpeechRecognitionImpl) {
-      statusText.textContent = "Spraakherkenning niet beschikbaar in deze browser.";
-      return;
-    }
-    if (listening) return;
-    window.speechSynthesis.cancel(); // in case TTS is still talking, let the user jump straight to answering
-    startListening();
-  });
-
-  function startListening() {
-    listenBtn.disabled = false; // always allow a manual re-trigger once listening has kicked off or failed
-    recognition = new SpeechRecognitionImpl();
-    recognition.lang = "nl-NL";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 3;
-
-    setListeningUI(true);
-    statusText.textContent = "Spreek je antwoord uit…";
-
-    let handled = false;
-    const timeout = setTimeout(() => {
-      if (!handled) {
-        handled = true;
-        recognition.stop();
+  // ---------- Vraag met één antwoord (3-6-9, Collectief Geheugen) ----------
+  async function askSingle(player, qText, answers, { spokenPrefix = "" } = {}) {
+    questionText.textContent = qText;
+    turnBanner.textContent = `${player.name} is aan de beurt`;
+    renderScoreboard(player);
+    let attemptsLeft = 2; // 1 herkansing bij storing/geen geluid, niet bij fout antwoord
+    await speak(`${spokenPrefix}${qText}`);
+    while (true) {
+      const res = await listenOnce();
+      if (res.command === "repeat") { await speak(qText); continue; }
+      if (res.command === "pass") return false;
+      if (!res.transcripts) {
+        attemptsLeft--;
+        if (attemptsLeft <= 0) return false;
+        statusText.textContent = "Niets gehoord — probeer nog één keer.";
+        continue;
       }
-    }, 8000);
-
-    recognition.onresult = (event) => {
-      handled = true;
-      clearTimeout(timeout);
-      const results = event.results[0];
-      let transcripts = [];
-      for (let i = 0; i < results.length; i++) transcripts.push(results[i].transcript);
-      transcriptBox.textContent = `Gehoord: "${transcripts[0]}"`;
-      const q = currentQuestion();
-      const isCorrect = transcripts.some((t) => isCorrectAnswer(t, q.answers));
-      handleAnswer(isCorrect, q);
-    };
-
-    recognition.onerror = (event) => {
-      handled = true;
-      clearTimeout(timeout);
-      setListeningUI(false);
-      statusText.textContent = `Kon je niet verstaan (${event.error}). Probeer opnieuw.`;
-    };
-
-    recognition.onend = () => {
-      setListeningUI(false);
-    };
-
-    recognition.start();
-  }
-
-  function handleAnswer(isCorrect, q) {
-    const player = players[currentPlayerIndex];
-    if (isCorrect) {
-      player.score += 1;
-      resultBanner.textContent = "✅ Correct!";
-      resultBanner.className = "result-banner result-correct";
-      speak("Correct!", () => setTimeout(nextTurn, 1200));
-    } else {
-      resultBanner.textContent = `❌ Fout. Het juiste antwoord was: ${q.answers[0]}`;
-      resultBanner.className = "result-banner result-incorrect";
-      speak(`Helaas, het juiste antwoord was ${q.answers[0]}`, () => setTimeout(nextTurn, 1500));
+      return res.transcripts.some(t => isCorrectAnswer(t, answers));
     }
-    renderScoreboard();
-    listenBtn.disabled = true;
   }
 
+  // ---------- Keyword-beurt (Open Deur, Ingelijst, Finale-onderwerpen) ----------
+  async function keywordTurn(player, spokenIntro, keywords, valuePer, { repeatText = null } = {}) {
+    const state = keywords.map(() => "hidden");
+    renderKeywordSlots(keywords, state);
+    turnBanner.textContent = `${player.name} is aan de beurt`;
+    renderScoreboard(player);
+    await speak(spokenIntro);
+    let misses = 0;
+    let found = 0;
+    while (found < keywords.length && misses < MAX_MISSES) {
+      const res = await listenOnce();
+      if (res.command === "repeat") { await speak(repeatText || spokenIntro); continue; }
+      if (res.command === "pass") break;
+      if (!res.transcripts) { misses++; continue; }
+      const remaining = keywords.map((kw, i) => ({ kw, i })).filter(x => state[x.i] === "hidden");
+      const hits = [];
+      for (const t of res.transcripts) {
+        for (const { kw, i } of remaining) {
+          if (state[i] === "hidden" && isCorrectAnswer(t, kw.variants)) { state[i] = "found"; hits.push(kw.label); }
+        }
+      }
+      if (hits.length > 0) {
+        misses = 0;
+        found += hits.length;
+        hits.forEach(() => award(player, valuePer));
+        renderKeywordSlots(keywords, state);
+        const left = keywords.length - found;
+        showResult(true, `✅ ${hits.join(", ")}`);
+        await speak(`Juist: ${hits.join(", en ")}.` + (left > 0 ? ` Nog ${left}.` : " Alles gevonden!"));
+      } else {
+        misses++;
+        showResult(false, "❌ Niet gevonden");
+        if (misses < MAX_MISSES) await speak("Nee. Probeer nog eens, of zeg: pas.");
+      }
+    }
+    // onthulling
+    const missed = keywords.filter((_, i) => state[i] === "hidden");
+    keywords.forEach((_, i) => { if (state[i] === "hidden") state[i] = "revealed"; });
+    renderKeywordSlots(keywords, state);
+    if (missed.length > 0) await speak(`De overige antwoorden waren: ${missed.map(k => k.label).join(", ")}.`);
+    await wait(600);
+    return found;
+  }
+
+  // ---------- Rondes ----------
+  async function round369() {
+    roundBanner.textContent = "Ronde · 3-6-9";
+    clearStage();
+    await speak(`De eerste ronde: drie, zes, negen. ${N_369_QUESTIONS} korte vragen, om de beurt. Elke derde vraag levert ${mode === "seconds" ? "tien seconden" : "extra punten"} op.`);
+    const qs = shuffle(BANK_369).slice(0, N_369_QUESTIONS);
+    for (let i = 0; i < qs.length; i++) {
+      clearStage();
+      const player = players[i % players.length];
+      const bonus = (i + 1) % 3 === 0;
+      const value = mode === "seconds" ? (bonus ? VAL_369 : 0) : (bonus ? 20 : 10); // punten: 2/1 via award()
+      progressText.textContent = `Vraag ${i + 1} van ${qs.length}` + (bonus ? " · BONUSVRAAG" : "");
+      const prefix = bonus ? `Vraag ${i + 1}, een bonusvraag. ${player.name}: ` : `${player.name}: `;
+      const ok = await askSingle(player, qs[i].q, qs[i].answers, { spokenPrefix: prefix });
+      if (ok) {
+        if (value > 0) award(player, value);
+        showResult(true, "✅ Correct!");
+        await speak(value > 0 ? "Correct! Dat levert wat op." : "Correct!");
+      } else {
+        showResult(false, `❌ Antwoord: ${qs[i].answers[0]}`);
+        await speak(`Helaas. Het juiste antwoord was ${qs[i].answers[0]}.`);
+      }
+      await wait(400);
+    }
+  }
+
+  async function roundOpenDeur() {
+    roundBanner.textContent = "Ronde · Open Deur";
+    clearStage();
+    await speak(`De Open Deur. Iedere speler krijgt een onderwerp met vier sleutelwoorden. Elk goed antwoord is ${mode === "seconds" ? "twintig seconden" : "twee punten"} waard. Zeg pas als je het niet meer weet.`);
+    const topics = shuffle(BANK_OPENDEUR).slice(0, players.length);
+    for (let i = 0; i < players.length; i++) {
+      clearStage();
+      const t = topics[i];
+      questionText.textContent = t.topic;
+      progressText.textContent = `Open Deur · ${t.topic}`;
+      await keywordTurn(players[i], `${players[i].name}. Jouw onderwerp: ${t.topic}. ${t.prompt}`, t.keywords, VAL_OPENDEUR, { repeatText: t.prompt });
+    }
+  }
+
+  async function roundPuzzel() {
+    roundBanner.textContent = "Ronde · De Puzzel";
+    clearStage();
+    await speak(`De Puzzel. Je hoort vier aanwijzingen die allemaal naar één woord verwijzen. Raad het verband, goed voor ${mode === "seconds" ? "dertig seconden" : "drie punten"}. Zeg herhaal om de aanwijzingen opnieuw te horen.`);
+    const puzzles = shuffle(BANK_PUZZEL).slice(0, players.length * PUZZELS_PER_PLAYER);
+    let pi = 0;
+    for (let r = 0; r < PUZZELS_PER_PLAYER; r++) {
+      for (let i = 0; i < players.length && pi < puzzles.length; i++, pi++) {
+        clearStage();
+        const player = players[i];
+        const puz = puzzles[pi];
+        questionText.textContent = puz.clues.map(c => "• " + c).join("\n");
+        turnBanner.textContent = `${player.name} is aan de beurt`;
+        renderScoreboard(player);
+        progressText.textContent = `Puzzel ${pi + 1} van ${puzzles.length}`;
+        const cluesSpoken = `De aanwijzingen zijn: ${puz.clues.join(". ")}. Wat is het verband?`;
+        await speak(`${player.name}. ${cluesSpoken}`);
+        let solved = false, attempts = 0;
+        while (attempts < 2 && !solved) {
+          const res = await listenOnce(11000);
+          if (res.command === "repeat") { await speak(cluesSpoken); continue; }
+          if (res.command === "pass") break;
+          if (!res.transcripts) { attempts++; continue; }
+          attempts++;
+          solved = res.transcripts.some(t => isCorrectAnswer(t, puz.answer.variants));
+          if (!solved && attempts < 2) await speak("Nee, dat is het niet. Nog één poging.");
+        }
+        if (solved) {
+          award(player, VAL_PUZZEL);
+          showResult(true, `✅ ${puz.answer.label}`);
+          await speak(`Juist! Het verband was ${puz.answer.label}.`);
+        } else {
+          showResult(false, `❌ Het was: ${puz.answer.label}`);
+          await speak(`Het verband was: ${puz.answer.label}.`);
+        }
+        await wait(500);
+      }
+    }
+  }
+
+  async function roundGeheugen() {
+    roundBanner.textContent = "Ronde · Collectief Geheugen";
+    clearStage();
+    await speak(`Het Collectief Geheugen. Luister goed naar een kort verhaal. Daarna volgen vijf vragen over de details. Elk goed antwoord is ${mode === "seconds" ? "vijftien seconden" : "punten"} waard.`);
+    const stories = shuffle(BANK_GEHEUGEN).slice(0, players.length);
+    for (let i = 0; i < players.length; i++) {
+      clearStage();
+      const player = players[i];
+      const st = stories[i];
+      questionText.textContent = `📻 ${st.title}\n\n(luister…)`;
+      turnBanner.textContent = `${player.name} is aan de beurt`;
+      renderScoreboard(player);
+      await speak(`${player.name}, luister goed. ${st.title}. ${st.story}`);
+      let correct = 0;
+      for (let qi = 0; qi < st.questions.length; qi++) {
+        clearStage();
+        progressText.textContent = `${st.title} · vraag ${qi + 1} van ${st.questions.length}`;
+        const q = st.questions[qi];
+        const ok = await askSingle(player, q.q, q.answers);
+        if (ok) {
+          correct++;
+          award(player, VAL_GEHEUGEN);
+          showResult(true, "✅ Correct!");
+          await speak("Juist.");
+        } else {
+          showResult(false, `❌ ${q.answers[0]}`);
+          await speak(`Nee, het was: ${q.answers[0]}.`);
+        }
+      }
+      await speak(`${correct} van de ${st.questions.length} goed.`);
+    }
+  }
+
+  async function roundIngelijst() {
+    roundBanner.textContent = "Ronde · Ingelijst";
+    clearStage();
+    await speak(`Ingelijst. Iedere speler krijgt een beroemd persoon in de lijst. Noem zoveel mogelijk van de vijf feiten die wij zoeken. Elk goed antwoord: ${mode === "seconds" ? "vijftien seconden" : "punten"}.`);
+    const subjects = shuffle(BANK_INGELIJST).slice(0, players.length);
+    for (let i = 0; i < players.length; i++) {
+      clearStage();
+      const s = subjects[i];
+      questionText.textContent = `🖼 ${s.subject}`;
+      progressText.textContent = `Ingelijst · ${s.subject}`;
+      await keywordTurn(players[i], `${players[i].name}. In de lijst: ${s.subject}. Wat weet je over deze persoon?`, s.keywords, VAL_INGELIJST, { repeatText: `Wat weet je over ${s.subject}?` });
+    }
+  }
+
+  // ---------- Finale ----------
+  const clockEls = { a: $("clockA"), b: $("clockB") };
+  function renderClocks(fin, runningIdx) {
+    clocksBox.style.display = "flex";
+    ["a", "b"].forEach((k, idx) => {
+      const el = clockEls[k];
+      el.querySelector(".name").textContent = fin[idx].player.name;
+      el.querySelector(".time").textContent = Math.max(0, Math.ceil(fin[idx].ms / 1000));
+      el.className = "clock" + (runningIdx === idx ? " running" : "") + (fin[idx].ms <= 0 ? " dead" : "");
+    });
+  }
+
+  async function roundFinale() {
+    roundBanner.textContent = "Finale";
+    clearStage();
+    if (players.length < 2) { await speak("Geen finale met één speler. Het spel zit erop!"); return; }
+    const ranked = players.slice().sort((x, y) => y.score - x.score);
+    const [p1, p2] = [ranked[0], ranked[1]];
+    if (players.length > 2) {
+      await speak(`De finale wordt gespeeld door ${p1.name} en ${p2.name}. De rest is uitgeschakeld.`);
+    }
+
+    if (mode === "points") return finalePoints(p1, p2);
+
+    // Seconden-finale: klokken tellen af, goed sleutelwoord = beurt wisselt.
+    const fin = [
+      { player: p2, ms: Math.max(15, p2.score) * 1000 }, // laagste begint
+      { player: p1, ms: Math.max(15, p1.score) * 1000 }
+    ];
+    await speak(`De finale. Jullie seconden zijn nu je levenslijn. Wie aan de beurt is, verliest tijd tijdens het nadenken. Een goed sleutelwoord geeft de beurt, en de klok, aan je tegenstander. Wie op nul staat, verliest. ${fin[0].player.name} begint.`);
+    const subjects = shuffle(BANK_FINALE);
+    let cur = 0; // index in fin
+    let si = 0;
+    outer: while (si < subjects.length) {
+      const subject = subjects[si];
+      const state = subject.keywords.map(() => "hidden");
+      clearStage();
+      questionText.textContent = subject.subject;
+      renderKeywordSlots(subject.keywords, state);
+      renderClocks(fin, cur);
+      await speak(`Het onderwerp is: ${subject.subject}. Noem wat je weet.`);
+      let remaining = subject.keywords.length;
+      let consecutivePasses = 0;
+      while (remaining > 0) {
+        const active = fin[cur];
+        turnBanner.textContent = `${active.player.name} — klok loopt!`;
+        renderClocks(fin, cur);
+        // klok loopt alleen tijdens luisteren/denken
+        const tickStart = Date.now();
+        const ticker = setInterval(() => {
+          active.ms = active.msSnapshot - (Date.now() - tickStart);
+          renderClocks(fin, cur);
+          if (active.ms <= 0) { if (activeListen) activeListen.finish({ transcripts: null, command: "timeout" }); }
+        }, 200);
+        active.msSnapshot = active.ms;
+        const res = await listenOnce(Math.min(10000, active.ms + 500));
+        clearInterval(ticker);
+        active.ms = Math.max(0, active.msSnapshot - (Date.now() - tickStart));
+        renderClocks(fin, cur);
+        if (active.ms <= 0) break outer;
+
+        if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
+        if (res.command === "pass" || res.command === "timeout" || !res.transcripts) {
+          consecutivePasses++;
+          if (consecutivePasses >= 2) {
+            const missed = subject.keywords.filter((_, i) => state[i] === "hidden");
+            if (missed.length) await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`);
+            break; // volgend onderwerp, zelfde speler blijft aan zet
+          }
+          await speak("De klok loopt door!");
+          continue;
+        }
+        const hits = [];
+        subject.keywords.forEach((kw, i) => {
+          if (state[i] === "hidden" && res.transcripts.some(t => isCorrectAnswer(t, kw.variants))) {
+            state[i] = "found"; hits.push(kw.label);
+          }
+        });
+        if (hits.length > 0) {
+          consecutivePasses = 0;
+          remaining -= hits.length;
+          renderKeywordSlots(subject.keywords, state);
+          showResult(true, `✅ ${hits.join(", ")}`);
+          cur = 1 - cur; // beurt (en klok) naar tegenstander
+          await speak(`Juist: ${hits.join(", en ")}. ${fin[cur].player.name}, jouw klok loopt.`);
+        } else {
+          showResult(false, "❌");
+          // klok liep al door tijdens deze poging; direct opnieuw luisteren
+        }
+      }
+      si++;
+    }
+    const loser = fin.find(f => f.ms <= 0) || fin.reduce((a, b) => (a.ms < b.ms ? a : b));
+    const winner = fin.find(f => f !== loser);
+    renderClocks(fin, -1);
+    showResult(true, `🏆 ${winner.player.name} wint!`);
+    await speak(`De klok van ${loser.player.name} staat op nul. ${winner.player.name} is de slimste onderweg!`);
+  }
+
+  async function finalePoints(p1, p2) {
+    await speak(`De finale op punten. Drie onderwerpen, om de beurt antwoorden. Wie de meeste sleutelwoorden vindt, wint. ${p2.name} begint.`);
+    const subjects = shuffle(BANK_FINALE).slice(0, 3);
+    const tally = new Map([[p1, 0], [p2, 0]]);
+    let cur = p2;
+    for (const subject of subjects) {
+      const state = subject.keywords.map(() => "hidden");
+      clearStage();
+      questionText.textContent = subject.subject;
+      renderKeywordSlots(subject.keywords, state);
+      await speak(`Het onderwerp is: ${subject.subject}.`);
+      let remaining = subject.keywords.length;
+      let strikes = 0; // 2 missers na elkaar (beide spelers samen) = volgend onderwerp
+      while (remaining > 0 && strikes < 2) {
+        turnBanner.textContent = `${cur.name} is aan de beurt`;
+        const res = await listenOnce();
+        if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
+        let hit = false;
+        if (res.transcripts && res.command !== "pass") {
+          subject.keywords.forEach((kw, i) => {
+            if (state[i] === "hidden" && res.transcripts.some(t => isCorrectAnswer(t, kw.variants))) {
+              state[i] = "found"; remaining--; hit = true;
+              tally.set(cur, tally.get(cur) + 1);
+            }
+          });
+        }
+        if (hit) {
+          strikes = 0;
+          renderKeywordSlots(subject.keywords, state);
+          showResult(true, `✅ ${cur.name}: ${tally.get(cur)}`);
+          await speak("Juist.");
+        } else {
+          strikes++;
+          showResult(false, "❌");
+          await speak("Nee.");
+        }
+        cur = cur === p1 ? p2 : p1; // beurt wisselt altijd
+      }
+      const missed = subject.keywords.filter((_, i) => state[i] === "hidden");
+      if (missed.length) await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`);
+    }
+    const s1 = tally.get(p1), s2 = tally.get(p2);
+    const winner = s1 === s2 ? null : (s1 > s2 ? p1 : p2);
+    if (winner) {
+      showResult(true, `🏆 ${winner.name} wint ${Math.max(s1, s2)} — ${Math.min(s1, s2)}`);
+      await speak(`${winner.name} wint de finale met ${Math.max(s1, s2)} tegen ${Math.min(s1, s2)}!`);
+    } else {
+      showResult(true, `🤝 Gelijkspel: ${s1} — ${s2}`);
+      await speak(`Gelijkspel! Jullie zijn allebei de slimste onderweg.`);
+    }
+  }
+
+  // ---------- Spelverloop ----------
+  async function announceStandings() {
+    const ranked = players.slice().sort((a, b) => b.score - a.score);
+    const lines = ranked.map(p => `${p.name}: ${p.score} ${mode === "seconds" ? "seconden" : "punten"}`);
+    await speak(`De tussenstand. ${lines.join(". ")}.`);
+  }
+
+  async function runGame() {
+    if (mode === "seconds") players.forEach(p => p.score = START_SECONDS);
+    else players.forEach(p => p.score = 0);
+    renderScoreboard();
+    await speak(`Welkom bij De Slimste Onderweg! Er ${players.length === 1 ? "speelt één speler" : "spelen " + players.length + " spelers"} mee. Veel succes.`);
+    const order = [
+      ["r369", round369],
+      ["opendeur", roundOpenDeur],
+      ["puzzel", roundPuzzel],
+      ["geheugen", roundGeheugen],
+      ["ingelijst", roundIngelijst]
+    ];
+    for (const [key, fn] of order) {
+      if (!enabledRounds[key]) continue;
+      await fn();
+      await announceStandings();
+    }
+    if (enabledRounds.finale && players.length >= 2) {
+      await roundFinale();
+    } else {
+      const ranked = players.slice().sort((a, b) => b.score - a.score);
+      showResult(true, `🏆 ${ranked[0].name} wint!`);
+      await speak(`Eindstand: ${ranked[0].name} wint met ${ranked[0].score} ${mode === "seconds" ? "seconden" : "punten"}. Gefeliciteerd!`);
+    }
+    roundBanner.textContent = "Einde";
+    turnBanner.textContent = "Spel afgelopen";
+    progressText.textContent = "Herlaad de pagina voor een nieuw spel.";
+  }
+
+  startBtn.addEventListener("click", () => {
+    if (players.length < 1) return;
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    runGame().catch(err => {
+      console.error(err);
+      statusText.textContent = "Er ging iets mis: " + err.message;
+    });
+  });
 })();
 </script>
 </body>
