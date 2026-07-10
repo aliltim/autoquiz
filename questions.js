@@ -3,7 +3,7 @@
 // Elke keyword heeft varianten voor fuzzy STT-matching (cijfers ook als woorden).
 
 // ---------------------------------------------------------------------------
-// 3-6-9 — korte open vragen, elke derde vraag levert tijd/punten op
+// 3-6-9 — korte open vragen
 // ---------------------------------------------------------------------------
 const BANK_369 = [
   { q: "Welke zee ligt tussen Griekenland en Turkije?", answers: ["egeische zee", "de egeische zee", "egeische"] },
@@ -75,7 +75,63 @@ const BANK_369 = [
   { q: "Welke Griekse god heerste over de zee?", answers: ["poseidon"] },
   { q: "Hoe heet de wetenschap die het weer bestudeert?", answers: ["meteorologie", "de meteorologie"] },
   { q: "Welk land won het allereerste WK voetbal in 1930?", answers: ["uruguay"] },
-  { q: "Hoe heette het schip waarmee Darwin zijn beroemde reis maakte?", answers: ["beagle", "de beagle", "hms beagle"] }
+  { q: "Hoe heette het schip waarmee Darwin zijn beroemde reis maakte?", answers: ["beagle", "de beagle", "hms beagle"] },
+  { q: "Wat is de hoofdstad van Argentinië?", answers: ["buenos aires"] },
+  { q: "Hoe heet het hoogste gebouw ter wereld?", answers: ["burj khalifa", "de burj khalifa"] },
+  { q: "Welke Duitse componist schreef de Matthäus-Passion?", answers: ["bach", "johann sebastian bach"] },
+  { q: "Wat is de kleinste planeet van ons zonnestelsel?", answers: ["mercurius"] },
+  { q: "In welk land ligt Timboektoe?", answers: ["mali"] },
+  { q: "Hoe heet de Griekse oppergod?", answers: ["zeus"] },
+  { q: "Wie schreef Honderd jaar eenzaamheid?", answers: ["garcia marquez", "gabriel garcia marquez", "marquez"] },
+  { q: "Wat is het scheikundig symbool voor ijzer?", answers: ["fe", "f e", "ferrum"] },
+  { q: "Wiens expeditie voer als eerste rond de wereld?", answers: ["magelhaes", "magellan", "ferdinand magelhaes"] },
+  { q: "Wat is de hoofdstad van Portugal?", answers: ["lissabon"] },
+  { q: "Welke ziekte werd in 1980 officieel uitgeroeid verklaard?", answers: ["pokken", "de pokken"] },
+  { q: "Wie schreef Het Achterhuis?", answers: ["anne frank"] },
+  { q: "Wat is de langste rivier van Afrika?", answers: ["nijl", "de nijl"] },
+  { q: "Hoe heet de wetenschap die fossielen bestudeert?", answers: ["paleontologie", "de paleontologie"] },
+  { q: "Welke natuurkundige formuleerde de drie bewegingswetten?", answers: ["newton", "isaac newton"] },
+  { q: "In welk jaar begon de Franse Revolutie?", answers: ["1789", "zeventienhonderd negenentachtig", "zeventien negenentachtig"] },
+  { q: "Wat is de nationale munt van Japan?", answers: ["yen", "de yen"] },
+  { q: "Welke kunstenaar maakte het beeld David in Florence?", answers: ["michelangelo"] },
+  { q: "Hoe heet het grootste koraalrif ter wereld?", answers: ["great barrier reef", "groot barriererif", "barriere rif"] },
+  { q: "Welk land schonk het Vrijheidsbeeld aan Amerika?", answers: ["frankrijk"] },
+  { q: "Wat is de hoofdstad van Turkije?", answers: ["ankara"] },
+  { q: "Wie was de laatste tsaar van Rusland?", answers: ["nicolaas de tweede", "nicolaas twee", "tsaar nicolaas", "nicolaas"] },
+  { q: "Welk element heeft het symbool Na?", answers: ["natrium"] },
+  { q: "Hoe heet de koude wind die door het Rhônedal naar Zuid-Frankrijk waait?", answers: ["mistral", "de mistral"] },
+  { q: "Welke Amerikaanse staat is de grootste in oppervlakte?", answers: ["alaska"] },
+  { q: "Wie componeerde De Vier Jaargetijden?", answers: ["vivaldi", "antonio vivaldi"] },
+  { q: "Wat is de grootste hete woestijn ter wereld?", answers: ["sahara", "de sahara"] },
+  { q: "Welke voetballer scoorde in 1986 met de 'Hand van God'?", answers: ["maradona", "diego maradona"] },
+  { q: "Wat is de hoofdstad van Oostenrijk?", answers: ["wenen"] },
+  { q: "Welk dier is wereldwijd het dodelijkst voor de mens?", answers: ["mug", "de mug", "muggen"] },
+  { q: "Hoe heet het extreem zoute meer tussen Israël en Jordanië?", answers: ["dode zee", "de dode zee"] },
+  { q: "Wie schilderde De Schreeuw?", answers: ["munch", "edvard munch"] },
+  { q: "Welke organen zuiveren het bloed en maken urine?", answers: ["nieren", "de nieren", "nier"] },
+  { q: "Wie ontwierp de Sagrada Família in Barcelona?", answers: ["gaudi", "antoni gaudi"] },
+  { q: "Wat was de codenaam van de geallieerde invasie in Normandië?", answers: ["overlord", "operatie overlord", "operation overlord"] },
+  { q: "Bij welke planeet hoort Ganymedes, de grootste maan van het zonnestelsel?", answers: ["jupiter"] },
+  { q: "Hoe heet de Japanse rijstwijn?", answers: ["sake"] },
+  { q: "Wat is de hoofdstad van Schotland?", answers: ["edinburgh", "edinburg"] },
+  { q: "Welke oorlog werd beëindigd met het Verdrag van Versailles?", answers: ["eerste wereldoorlog", "de eerste wereldoorlog", "wereldoorlog een"] },
+  { q: "Welke dwergplaneet was tot 2006 officieel een planeet?", answers: ["pluto"] },
+  { q: "Welke Italiaanse stad is beroemd om zijn scheve toren?", answers: ["pisa"] },
+  { q: "Wie schreef De Hobbit?", answers: ["tolkien", "j r r tolkien", "jrr tolkien"] },
+  { q: "Wat is het snelste landdier ter wereld?", answers: ["jachtluipaard", "cheeta", "cheetah", "het jachtluipaard"] },
+  { q: "Wat is de hoofdstad van Hongarije?", answers: ["boedapest", "budapest"] },
+  { q: "Welke Franse schilder is beroemd om zijn waterlelies?", answers: ["monet", "claude monet"] },
+  { q: "Hoe heet de angst voor kleine ruimtes?", answers: ["claustrofobie"] },
+  { q: "Wie was president van Zuid-Afrika vóór Nelson Mandela?", answers: ["de klerk", "frederik de klerk", "f w de klerk"] },
+  { q: "Hoe heet ons sterrenstelsel?", answers: ["melkweg", "de melkweg", "melkwegstelsel"] },
+  { q: "Welk land heeft als enige geen rechthoekige vlag?", answers: ["nepal"] },
+  { q: "Welke chemicus ontwierp het periodiek systeem?", answers: ["mendelejev", "mendeljev", "dmitri mendelejev"] },
+  { q: "Wat is de hoofdstad van Ierland?", answers: ["dublin"] },
+  { q: "Op welke eilanden bestudeerde Darwin zijn beroemde vinken?", answers: ["galapagos", "galapagoseilanden", "de galapagoseilanden"] },
+  { q: "Wie zong Purple Rain?", answers: ["prince"] },
+  { q: "Welke rivier vormt een groot deel van de grens tussen de VS en Mexico?", answers: ["rio grande", "de rio grande"] },
+  { q: "Welke planeet wordt de rode planeet genoemd?", answers: ["mars"] },
+  { q: "Wat is de hoofdstad van Griekenland?", answers: ["athene"] }
 ];
 
 // ---------------------------------------------------------------------------
@@ -241,6 +297,86 @@ const BANK_OPENDEUR = [
       { label: "Al Capone (gevangene)", variants: ["al capone", "capone"] },
       { label: "Ontsnapping van 1962", variants: ["ontsnapping", "1962", "ontsnapt", "lepels", "escape"] }
     ]
+  },
+  {
+    topic: "Het Suezkanaal",
+    prompt: "Wat weet je over het Suezkanaal?",
+    keywords: [
+      { label: "Egypte", variants: ["egypte"] },
+      { label: "Verbindt Middellandse Zee en Rode Zee", variants: ["rode zee", "middellandse zee"] },
+      { label: "Ever Given (blokkade 2021)", variants: ["ever given", "blokkade", "vastgelopen schip", "2021"] },
+      { label: "Niet meer om Afrika varen", variants: ["om afrika", "kaap de goede hoop", "kortere route", "afrika"] }
+    ]
+  },
+  {
+    topic: "De Oriënt-Express",
+    prompt: "Wat weet je over de Oriënt-Express?",
+    keywords: [
+      { label: "Luxetrein", variants: ["trein", "luxetrein", "slaaptrein"] },
+      { label: "Parijs (vertrek)", variants: ["parijs"] },
+      { label: "Istanbul (eindpunt)", variants: ["istanbul", "istanboel", "constantinopel"] },
+      { label: "Agatha Christie (moordmysterie)", variants: ["agatha christie", "moord", "poirot"] }
+    ]
+  },
+  {
+    topic: "Machu Picchu",
+    prompt: "Wat weet je over Machu Picchu?",
+    keywords: [
+      { label: "Peru", variants: ["peru"] },
+      { label: "Inca's", variants: ["inca", "incas", "incastad"] },
+      { label: "Hoog in de Andes", variants: ["andes", "bergen", "de andes"] },
+      { label: "Herontdekt in 1911", variants: ["1911", "herontdekt", "hiram bingham", "bingham"] }
+    ]
+  },
+  {
+    topic: "Het Vrijheidsbeeld",
+    prompt: "Wat weet je over het Vrijheidsbeeld?",
+    keywords: [
+      { label: "New York", variants: ["new york"] },
+      { label: "Cadeau van Frankrijk", variants: ["frankrijk", "cadeau van frankrijk", "frans cadeau"] },
+      { label: "Fakkel", variants: ["fakkel", "toorts"] },
+      { label: "Ellis Island / immigranten", variants: ["ellis island", "immigranten", "landverhuizers"] }
+    ]
+  },
+  {
+    topic: "De Gouden Eeuw",
+    prompt: "Wat weet je over de Nederlandse Gouden Eeuw?",
+    keywords: [
+      { label: "Zeventiende eeuw", variants: ["zeventiende eeuw", "17e eeuw", "1600"] },
+      { label: "VOC", variants: ["voc", "verenigde oost indische compagnie", "oost indische compagnie"] },
+      { label: "Rembrandt", variants: ["rembrandt"] },
+      { label: "Handel en schepen", variants: ["handel", "schepen", "koopvaardij", "specerijen"] }
+    ]
+  },
+  {
+    topic: "Woodstock",
+    prompt: "Wat weet je over Woodstock?",
+    keywords: [
+      { label: "1969", variants: ["1969", "negentien negenenzestig", "negentienhonderd negenenzestig"] },
+      { label: "Muziekfestival", variants: ["festival", "muziekfestival", "popfestival"] },
+      { label: "Jimi Hendrix", variants: ["jimi hendrix", "hendrix"] },
+      { label: "Half miljoen bezoekers / modder", variants: ["half miljoen", "modder", "vierhonderdduizend", "massa"] }
+    ]
+  },
+  {
+    topic: "De Sixtijnse Kapel",
+    prompt: "Wat weet je over de Sixtijnse Kapel?",
+    keywords: [
+      { label: "Michelangelo", variants: ["michelangelo"] },
+      { label: "Vaticaan", variants: ["vaticaan", "rome", "vaticaanstad"] },
+      { label: "Plafondschildering", variants: ["plafond", "plafondschildering", "de schepping van adam"] },
+      { label: "Conclaaf (pausverkiezing)", variants: ["conclaaf", "pausverkiezing", "paus kiezen", "witte rook"] }
+    ]
+  },
+  {
+    topic: "Het monster van Loch Ness",
+    prompt: "Wat weet je over het monster van Loch Ness?",
+    keywords: [
+      { label: "Schotland", variants: ["schotland"] },
+      { label: "Meer", variants: ["meer", "loch", "het meer"] },
+      { label: "Nessie", variants: ["nessie"] },
+      { label: "Beroemde vervalste foto", variants: ["vervalste foto", "nepfoto", "foto", "hoax"] }
+    ]
   }
 ];
 
@@ -267,7 +403,17 @@ const BANK_PUZZEL = [
   { clues: ["Prometheus stal het van de goden", "Waar rook is...", "Kamp in de zomer", "Doven met water"], answer: { label: "Vuur", variants: ["vuur", "het vuur"] } },
   { clues: ["Heelt alle wonden", "Big Ben meet het", "Vliegt als je plezier hebt", "Voor Einstein was het relatief"], answer: { label: "Tijd", variants: ["tijd", "de tijd"] } },
   { clues: ["Kaartkleur naast schoppen", "Cupido mikt erop", "Breekt bij verdriet", "Klopt in je borst"], answer: { label: "Hart", variants: ["hart", "het hart", "harten"] } },
-  { clues: ["Witje en de zeven dwergen", "Geen twee vlokken gelijk", "Ballen gooien in de winter", "Wit tapijt"], answer: { label: "Sneeuw", variants: ["sneeuw", "de sneeuw"] } }
+  { clues: ["Witje en de zeven dwergen", "Geen twee vlokken gelijk", "Ballen gooien in de winter", "Wit tapijt"], answer: { label: "Sneeuw", variants: ["sneeuw", "de sneeuw"] } },
+  { clues: ["Bakker", "Beleg", "De mens leeft niet van ... alleen", "Wit of bruin"], answer: { label: "Brood", variants: ["brood", "het brood"] } },
+  { clues: ["Sneeuwwitjes stiefmoeder vroeg het wat", "Achteruitkijken in de auto", "Reflectie", "Zeven jaar ongeluk"], answer: { label: "Spiegel", variants: ["spiegel", "de spiegel", "een spiegel"] } },
+  { clues: ["Op een koningshoofd", "Deense munt", "Op een kies bij de tandarts", "Bovenkant van een boom"], answer: { label: "Kroon", variants: ["kroon", "de kroon", "een kroon"] } },
+  { clues: ["Bewaart je geld", "In het park", "Voetbalreserves zitten erop", "In de woonkamer"], answer: { label: "Bank", variants: ["bank", "de bank", "een bank"] } },
+  { clues: ["Valt in de herfst", "Roddeltijdschrift", "Klavertje met geluk heeft er vier", "Van een zaag"], answer: { label: "Blad", variants: ["blad", "het blad", "een blad", "bladeren"] } },
+  { clues: ["Bij Waterloo", "Om de arm houden", "Roeien", "In je haar"], answer: { label: "Slag", variants: ["slag", "de slag", "een slag"] } },
+  { clues: ["Geel of rood op het voetbalveld", "De aas is de hoogste", "Om de weg te vinden", "Verjaardagspost"], answer: { label: "Kaart", variants: ["kaart", "de kaart", "een kaart", "kaarten"] } },
+  { clues: ["Pinokkio's groeide", "Van een schoen", "Cyrano had er een grote", "Ruiken"], answer: { label: "Neus", variants: ["neus", "de neus", "een neus"] } },
+  { clues: ["Schaakstuk", "Troje", "Gymtoestel", "Van Sinterklaas"], answer: { label: "Paard", variants: ["paard", "het paard", "een paard"] } },
+  { clues: ["Op een hoorntje", "Glad op de weg", "Schaatsen erop", "Beren op de Noordpool"], answer: { label: "IJs", variants: ["ijs", "het ijs"] } }
 ];
 
 // ---------------------------------------------------------------------------
@@ -372,171 +518,378 @@ const BANK_GEHEUGEN = [
       { q: "Welk eiland was het echte doelwit?", answers: ["sicilie"] },
       { q: "Hoe heette de operatie?", answers: ["mincemeat", "operatie mincemeat", "operation mincemeat"] }
     ]
+  },
+  {
+    title: "De kaasrace",
+    story: "Elk jaar rolt er in Engeland een kaas van een steile heuvel, Cooper's Hill, en rennen tientallen deelnemers erachteraan. De kaas, een Double Gloucester van ongeveer vier kilo, haalt snelheden tot wel honderd kilometer per uur. De winnaar is wie als eerste beneden is, en de hoofdprijs is simpelweg de kaas zelf. Gebroken enkels en polsen horen er elk jaar bij, en een ambulance staat standaard onderaan de heuvel.",
+    questions: [
+      { q: "In welk land vindt de kaasrace plaats?", answers: ["engeland", "groot brittannie", "verenigd koninkrijk"] },
+      { q: "Hoe heet de heuvel?", answers: ["coopers hill", "cooper's hill", "cooper hill"] },
+      { q: "Welke kaassoort rolt er van de heuvel?", answers: ["double gloucester", "gloucester"] },
+      { q: "Wat wint de winnaar?", answers: ["de kaas", "kaas", "de kaas zelf"] },
+      { q: "Welke snelheid haalt de kaas ongeveer?", answers: ["100", "honderd", "honderd kilometer per uur", "100 km per uur"] }
+    ]
+  },
+  {
+    title: "De man die de Eiffeltoren verkocht",
+    story: "In 1925 nodigde oplichter Victor Lustig een groep schroothandelaren uit in een chique hotel in Parijs. Hij deed zich voor als ambtenaar en beweerde dat de Eiffeltoren wegens roestproblemen als schroot verkocht zou worden. Handelaar André Poisson betaalde een smak geld voor de toren, en durfde uit schaamte geen aangifte te doen. Lustig probeerde de truc een maand later gewoon nog een keer.",
+    questions: [
+      { q: "Hoe heette de oplichter?", answers: ["lustig", "victor lustig"] },
+      { q: "In welk jaar gebeurde dit?", answers: ["1925", "negentien vijfentwintig", "negentienhonderd vijfentwintig"] },
+      { q: "Als wat verkocht hij de Eiffeltoren?", answers: ["schroot", "als schroot", "oud ijzer"] },
+      { q: "Wat was het beroep van de slachtoffers?", answers: ["schroothandelaar", "schroothandelaren", "handelaar"] },
+      { q: "Waarom deed het slachtoffer geen aangifte?", answers: ["schaamte", "uit schaamte", "hij schaamde zich"] }
+    ]
+  },
+  {
+    title: "De konijnenplaag",
+    story: "In 1859 liet de Engelse kolonist Thomas Austin vierentwintig konijnen los op zijn landgoed in Australië, zodat hij iets had om op te jagen. Binnen enkele tientallen jaren waren het er honderden miljoenen, die het landschap kaalvraten. Australië bouwde uiteindelijk een konijnenwerend hek van ruim drieduizend kilometer lang, dwars door het continent. Het hielp nauwelijks: de konijnen waren al aan de andere kant.",
+    questions: [
+      { q: "In welk land speelde deze plaag?", answers: ["australie"] },
+      { q: "Hoeveel konijnen werden er losgelaten?", answers: ["24", "vierentwintig"] },
+      { q: "Hoe heette de man die ze losliet?", answers: ["austin", "thomas austin"] },
+      { q: "Wat bouwde Australië tegen de konijnen?", answers: ["hek", "een hek", "konijnenhek", "konijnenwerend hek"] },
+      { q: "Hoe lang was dat hek ongeveer?", answers: ["3000", "drieduizend", "ruim drieduizend kilometer", "drieduizend kilometer"] }
+    ]
+  },
+  {
+    title: "De duurste postzegel ter wereld",
+    story: "In 1856 drukte de kolonie Brits-Guyana in noodhaast een klein aantal postzegels van één cent, in een dieproze kleur die magenta heet. Er is er precies één van bewaard gebleven. Het exemplaar werd in de loop der jaren steeds opnieuw geveild en bracht bij de laatste verkoop ongeveer acht miljoen dollar op, waarmee het per gram het duurste voorwerp ter wereld is.",
+    questions: [
+      { q: "Uit welke kolonie kwam de postzegel?", answers: ["brits guyana", "guyana", "brits guiana"] },
+      { q: "Wat was de oorspronkelijke waarde van de zegel?", answers: ["een cent", "1 cent", "cent"] },
+      { q: "Welke kleur heeft de zegel?", answers: ["magenta", "roze", "dieproze"] },
+      { q: "Hoeveel exemplaren zijn er bewaard gebleven?", answers: ["1", "een", "precies een"] },
+      { q: "Voor ongeveer hoeveel dollar werd hij laatst geveild?", answers: ["8 miljoen", "acht miljoen", "8000000", "acht miljoen dollar"] }
+    ]
   }
 ];
 
 // ---------------------------------------------------------------------------
-// Ingelijst — onderwerp, 5 sleutelwoorden
+// Ingelijst — lijstvraag met 10 tot 20 gezochte antwoorden.
+// Om de beurt één antwoord; fout of pas = je ligt eruit.
 // ---------------------------------------------------------------------------
 const BANK_INGELIJST = [
   {
-    subject: "Albert Einstein",
+    question: "Welke vissen die in de Noordzee leven, ken je?",
     keywords: [
-      { label: "Relativiteitstheorie", variants: ["relativiteitstheorie", "relativiteit"] },
-      { label: "E = mc²", variants: ["e is mc kwadraat", "emc kwadraat", "e mc kwadraat", "mc kwadraat"] },
-      { label: "Nobelprijs (Natuurkunde)", variants: ["nobelprijs"] },
-      { label: "Duitsland (geboorteland)", variants: ["duitsland", "duitser", "duits"] },
-      { label: "Foto met uitgestoken tong", variants: ["tong", "uitgestoken tong"] }
+      { label: "Haring", variants: ["haring"] },
+      { label: "Kabeljauw", variants: ["kabeljauw"] },
+      { label: "Schol", variants: ["schol"] },
+      { label: "Makreel", variants: ["makreel"] },
+      { label: "Tong", variants: ["tong"] },
+      { label: "Wijting", variants: ["wijting"] },
+      { label: "Sprot", variants: ["sprot"] },
+      { label: "Zeebaars", variants: ["zeebaars"] },
+      { label: "Tarbot", variants: ["tarbot"] },
+      { label: "Griet", variants: ["griet"] },
+      { label: "Schar", variants: ["schar"] },
+      { label: "Rog", variants: ["rog"] }
     ]
   },
   {
-    subject: "Vincent van Gogh",
+    question: "Noem landen die veel koffiebonen exporteren.",
     keywords: [
-      { label: "Zonnebloemen", variants: ["zonnebloemen", "de zonnebloemen"] },
-      { label: "Afgesneden oor", variants: ["oor", "oor afgesneden", "zijn oor"] },
-      { label: "Arles / Zuid-Frankrijk", variants: ["arles", "frankrijk", "zuid frankrijk", "provence"] },
-      { label: "Broer Theo", variants: ["theo", "broer theo", "zijn broer"] },
-      { label: "De Sterrennacht", variants: ["sterrennacht", "de sterrennacht", "starry night"] }
+      { label: "Brazilië", variants: ["brazilie"] },
+      { label: "Vietnam", variants: ["vietnam"] },
+      { label: "Colombia", variants: ["colombia"] },
+      { label: "Indonesië", variants: ["indonesie"] },
+      { label: "Ethiopië", variants: ["ethiopie"] },
+      { label: "Honduras", variants: ["honduras"] },
+      { label: "India", variants: ["india"] },
+      { label: "Oeganda", variants: ["oeganda", "uganda"] },
+      { label: "Mexico", variants: ["mexico"] },
+      { label: "Peru", variants: ["peru"] },
+      { label: "Guatemala", variants: ["guatemala"] },
+      { label: "Nicaragua", variants: ["nicaragua"] }
     ]
   },
   {
-    subject: "Cleopatra",
+    question: "Noem de twaalf provincies van Nederland.",
     keywords: [
-      { label: "Egypte / farao", variants: ["egypte", "farao", "koningin van egypte"] },
-      { label: "Julius Caesar", variants: ["caesar", "julius caesar"] },
-      { label: "Marcus Antonius", variants: ["marcus antonius", "antonius"] },
-      { label: "Dood door slangenbeet", variants: ["slang", "slangenbeet", "adder", "cobra"] },
-      { label: "Ezelinnenmelk (baden)", variants: ["ezelinnenmelk", "melk", "baden in melk"] }
+      { label: "Groningen", variants: ["groningen"] },
+      { label: "Friesland", variants: ["friesland", "fryslan"] },
+      { label: "Drenthe", variants: ["drenthe"] },
+      { label: "Overijssel", variants: ["overijssel"] },
+      { label: "Flevoland", variants: ["flevoland"] },
+      { label: "Gelderland", variants: ["gelderland"] },
+      { label: "Utrecht", variants: ["utrecht"] },
+      { label: "Noord-Holland", variants: ["noord holland"] },
+      { label: "Zuid-Holland", variants: ["zuid holland"] },
+      { label: "Zeeland", variants: ["zeeland"] },
+      { label: "Noord-Brabant", variants: ["noord brabant", "brabant"] },
+      { label: "Limburg", variants: ["limburg"] }
     ]
   },
   {
-    subject: "Freddie Mercury",
+    question: "Noem de landen van Zuid-Amerika.",
     keywords: [
-      { label: "Queen", variants: ["queen"] },
-      { label: "Bohemian Rhapsody", variants: ["bohemian rhapsody", "bohemian"] },
-      { label: "Live Aid (1985)", variants: ["live aid", "wembley"] },
-      { label: "Snor", variants: ["snor", "de snor"] },
-      { label: "Zanzibar (geboren)", variants: ["zanzibar"] }
+      { label: "Brazilië", variants: ["brazilie"] },
+      { label: "Argentinië", variants: ["argentinie"] },
+      { label: "Chili", variants: ["chili"] },
+      { label: "Peru", variants: ["peru"] },
+      { label: "Colombia", variants: ["colombia"] },
+      { label: "Venezuela", variants: ["venezuela"] },
+      { label: "Ecuador", variants: ["ecuador"] },
+      { label: "Bolivia", variants: ["bolivia"] },
+      { label: "Paraguay", variants: ["paraguay"] },
+      { label: "Uruguay", variants: ["uruguay"] },
+      { label: "Guyana", variants: ["guyana"] },
+      { label: "Suriname", variants: ["suriname"] }
     ]
   },
   {
-    subject: "Nelson Mandela",
+    question: "Noem de twaalf sterrenbeelden van de dierenriem.",
     keywords: [
+      { label: "Ram", variants: ["ram"] },
+      { label: "Stier", variants: ["stier"] },
+      { label: "Tweelingen", variants: ["tweelingen", "tweeling"] },
+      { label: "Kreeft", variants: ["kreeft"] },
+      { label: "Leeuw", variants: ["leeuw"] },
+      { label: "Maagd", variants: ["maagd"] },
+      { label: "Weegschaal", variants: ["weegschaal"] },
+      { label: "Schorpioen", variants: ["schorpioen"] },
+      { label: "Boogschutter", variants: ["boogschutter"] },
+      { label: "Steenbok", variants: ["steenbok"] },
+      { label: "Waterman", variants: ["waterman"] },
+      { label: "Vissen", variants: ["vissen"] }
+    ]
+  },
+  {
+    question: "Noem organen in het menselijk lichaam.",
+    keywords: [
+      { label: "Hart", variants: ["hart"] },
+      { label: "Longen", variants: ["longen", "long"] },
+      { label: "Lever", variants: ["lever"] },
+      { label: "Nieren", variants: ["nieren", "nier"] },
+      { label: "Hersenen", variants: ["hersenen", "brein"] },
+      { label: "Maag", variants: ["maag"] },
+      { label: "Darmen", variants: ["darmen", "darm", "dikke darm", "dunne darm"] },
+      { label: "Milt", variants: ["milt"] },
+      { label: "Alvleesklier", variants: ["alvleesklier", "pancreas"] },
+      { label: "Blaas", variants: ["blaas"] },
+      { label: "Huid", variants: ["huid"] },
+      { label: "Schildklier", variants: ["schildklier"] }
+    ]
+  },
+  {
+    question: "Noem klassieke Disney-animatiefilms.",
+    keywords: [
+      { label: "De Leeuwenkoning", variants: ["leeuwenkoning", "de leeuwenkoning", "lion king"] },
+      { label: "Frozen", variants: ["frozen"] },
+      { label: "Aladdin", variants: ["aladdin"] },
+      { label: "Bambi", variants: ["bambi"] },
+      { label: "Dumbo", variants: ["dumbo"] },
+      { label: "Pinokkio", variants: ["pinokkio", "pinocchio"] },
+      { label: "Sneeuwwitje", variants: ["sneeuwwitje"] },
+      { label: "Assepoester", variants: ["assepoester", "cinderella"] },
+      { label: "Mulan", variants: ["mulan"] },
+      { label: "Tarzan", variants: ["tarzan"] },
+      { label: "Jungle Boek", variants: ["jungle boek", "jungle book"] },
+      { label: "De Kleine Zeemeermin", variants: ["kleine zeemeermin", "de kleine zeemeermin", "ariel"] },
+      { label: "Belle en het Beest", variants: ["belle en het beest", "beauty and the beast"] },
+      { label: "Vaiana (Moana)", variants: ["vaiana", "moana"] },
+      { label: "Encanto", variants: ["encanto"] }
+    ]
+  },
+  {
+    question: "Noem scheikundige elementen uit het periodiek systeem.",
+    keywords: [
+      { label: "Waterstof", variants: ["waterstof"] },
+      { label: "Zuurstof", variants: ["zuurstof"] },
+      { label: "Koolstof", variants: ["koolstof"] },
+      { label: "Stikstof", variants: ["stikstof"] },
+      { label: "IJzer", variants: ["ijzer"] },
+      { label: "Goud", variants: ["goud"] },
+      { label: "Zilver", variants: ["zilver"] },
+      { label: "Koper", variants: ["koper"] },
+      { label: "Zink", variants: ["zink"] },
+      { label: "Helium", variants: ["helium"] },
+      { label: "Natrium", variants: ["natrium"] },
+      { label: "Kalium", variants: ["kalium"] },
+      { label: "Calcium", variants: ["calcium"] },
+      { label: "Lood", variants: ["lood"] },
+      { label: "Uranium", variants: ["uranium"] }
+    ]
+  },
+  {
+    question: "Noem sporten op de Olympische Zomerspelen.",
+    keywords: [
+      { label: "Atletiek", variants: ["atletiek"] },
+      { label: "Zwemmen", variants: ["zwemmen"] },
+      { label: "Turnen", variants: ["turnen", "gymnastiek"] },
+      { label: "Wielrennen", variants: ["wielrennen", "fietsen", "baanwielrennen"] },
+      { label: "Roeien", variants: ["roeien"] },
+      { label: "Judo", variants: ["judo"] },
+      { label: "Boksen", variants: ["boksen"] },
+      { label: "Schermen", variants: ["schermen"] },
+      { label: "Hockey", variants: ["hockey"] },
+      { label: "Voetbal", variants: ["voetbal"] },
+      { label: "Tennis", variants: ["tennis"] },
+      { label: "Tafeltennis", variants: ["tafeltennis"] },
+      { label: "Volleybal", variants: ["volleybal", "beachvolleybal"] },
+      { label: "Basketbal", variants: ["basketbal"] },
+      { label: "Boogschieten", variants: ["boogschieten"] }
+    ]
+  },
+  {
+    question: "Noem wereldkampioenen Formule 1.",
+    keywords: [
+      { label: "Max Verstappen", variants: ["verstappen", "max verstappen", "max"] },
+      { label: "Lewis Hamilton", variants: ["hamilton", "lewis hamilton"] },
+      { label: "Michael Schumacher", variants: ["schumacher", "michael schumacher"] },
+      { label: "Ayrton Senna", variants: ["senna", "ayrton senna"] },
+      { label: "Alain Prost", variants: ["prost", "alain prost"] },
+      { label: "Niki Lauda", variants: ["lauda", "niki lauda"] },
+      { label: "Sebastian Vettel", variants: ["vettel", "sebastian vettel"] },
+      { label: "Fernando Alonso", variants: ["alonso", "fernando alonso"] },
+      { label: "Kimi Räikkönen", variants: ["raikkonen", "kimi raikkonen", "kimi"] },
+      { label: "Jenson Button", variants: ["button", "jenson button"] },
+      { label: "Nico Rosberg", variants: ["rosberg", "nico rosberg"] },
+      { label: "Damon Hill", variants: ["damon hill", "hill"] },
+      { label: "Nigel Mansell", variants: ["mansell", "nigel mansell"] },
+      { label: "Nelson Piquet", variants: ["piquet", "nelson piquet"] },
+      { label: "Jackie Stewart", variants: ["jackie stewart", "stewart"] }
+    ]
+  },
+  {
+    question: "Noem instrumenten in een symfonieorkest.",
+    keywords: [
+      { label: "Viool", variants: ["viool"] },
+      { label: "Altviool", variants: ["altviool"] },
+      { label: "Cello", variants: ["cello"] },
+      { label: "Contrabas", variants: ["contrabas"] },
+      { label: "Dwarsfluit", variants: ["dwarsfluit", "fluit"] },
+      { label: "Hobo", variants: ["hobo"] },
+      { label: "Klarinet", variants: ["klarinet"] },
+      { label: "Fagot", variants: ["fagot"] },
+      { label: "Hoorn", variants: ["hoorn"] },
+      { label: "Trompet", variants: ["trompet"] },
+      { label: "Trombone", variants: ["trombone"] },
+      { label: "Tuba", variants: ["tuba"] },
+      { label: "Pauken", variants: ["pauken", "pauk"] },
+      { label: "Harp", variants: ["harp"] },
+      { label: "Piccolo", variants: ["piccolo"] }
+    ]
+  },
+  {
+    question: "Noem kruiden en specerijen uit de keuken.",
+    keywords: [
+      { label: "Peper", variants: ["peper", "zwarte peper"] },
+      { label: "Kaneel", variants: ["kaneel"] },
+      { label: "Nootmuskaat", variants: ["nootmuskaat"] },
+      { label: "Kruidnagel", variants: ["kruidnagel", "kruidnagels"] },
+      { label: "Gember", variants: ["gember"] },
+      { label: "Kurkuma", variants: ["kurkuma", "geelwortel"] },
+      { label: "Komijn", variants: ["komijn"] },
+      { label: "Saffraan", variants: ["saffraan"] },
+      { label: "Kardemom", variants: ["kardemom"] },
+      { label: "Basilicum", variants: ["basilicum"] },
+      { label: "Oregano", variants: ["oregano"] },
+      { label: "Tijm", variants: ["tijm"] },
+      { label: "Rozemarijn", variants: ["rozemarijn"] },
+      { label: "Peterselie", variants: ["peterselie"] },
+      { label: "Paprikapoeder", variants: ["paprikapoeder", "paprika"] }
+    ]
+  },
+  {
+    question: "Noem Europese hoofdsteden.",
+    keywords: [
+      { label: "Amsterdam", variants: ["amsterdam"] },
+      { label: "Brussel", variants: ["brussel"] },
+      { label: "Parijs", variants: ["parijs"] },
+      { label: "Berlijn", variants: ["berlijn"] },
+      { label: "Londen", variants: ["londen"] },
+      { label: "Madrid", variants: ["madrid"] },
+      { label: "Lissabon", variants: ["lissabon"] },
+      { label: "Rome", variants: ["rome"] },
+      { label: "Wenen", variants: ["wenen"] },
+      { label: "Bern", variants: ["bern"] },
+      { label: "Kopenhagen", variants: ["kopenhagen"] },
+      { label: "Oslo", variants: ["oslo"] },
+      { label: "Stockholm", variants: ["stockholm"] },
+      { label: "Helsinki", variants: ["helsinki"] },
+      { label: "Dublin", variants: ["dublin"] },
+      { label: "Warschau", variants: ["warschau"] },
+      { label: "Praag", variants: ["praag"] },
+      { label: "Boedapest", variants: ["boedapest", "budapest"] },
+      { label: "Athene", variants: ["athene"] },
+      { label: "Reykjavik", variants: ["reykjavik"] }
+    ]
+  },
+  {
+    question: "Noem landen in Afrika.",
+    keywords: [
+      { label: "Egypte", variants: ["egypte"] },
+      { label: "Marokko", variants: ["marokko"] },
+      { label: "Algerije", variants: ["algerije"] },
+      { label: "Tunesië", variants: ["tunesie"] },
+      { label: "Libië", variants: ["libie"] },
+      { label: "Nigeria", variants: ["nigeria"] },
+      { label: "Ghana", variants: ["ghana"] },
+      { label: "Kenia", variants: ["kenia"] },
+      { label: "Ethiopië", variants: ["ethiopie"] },
       { label: "Zuid-Afrika", variants: ["zuid afrika"] },
-      { label: "Apartheid", variants: ["apartheid", "anti apartheid"] },
-      { label: "Robbeneiland", variants: ["robbeneiland", "robben island"] },
-      { label: "27 jaar gevangen", variants: ["27 jaar", "zevenentwintig jaar", "27", "zevenentwintig"] },
-      { label: "Nobelprijs voor de Vrede", variants: ["nobelprijs", "vredesprijs", "nobelprijs voor de vrede"] }
+      { label: "Tanzania", variants: ["tanzania"] },
+      { label: "Oeganda", variants: ["oeganda", "uganda"] },
+      { label: "Senegal", variants: ["senegal"] },
+      { label: "Ivoorkust", variants: ["ivoorkust"] },
+      { label: "Kameroen", variants: ["kameroen"] },
+      { label: "Congo", variants: ["congo"] },
+      { label: "Soedan", variants: ["soedan", "sudan"] },
+      { label: "Somalië", variants: ["somalie"] },
+      { label: "Zimbabwe", variants: ["zimbabwe"] },
+      { label: "Mozambique", variants: ["mozambique"] }
     ]
   },
   {
-    subject: "Marie Curie",
+    question: "Noem fruitsoorten.",
     keywords: [
-      { label: "Radioactiviteit", variants: ["radioactiviteit", "straling", "radioactief"] },
-      { label: "Polonium en radium", variants: ["polonium", "radium"] },
-      { label: "Twee Nobelprijzen", variants: ["twee nobelprijzen", "2 nobelprijzen", "twee keer de nobelprijs"] },
-      { label: "Polen (geboorteland)", variants: ["polen", "pools", "poolse"] },
-      { label: "Echtgenoot Pierre", variants: ["pierre", "pierre curie", "haar man pierre"] }
+      { label: "Appel", variants: ["appel"] },
+      { label: "Peer", variants: ["peer"] },
+      { label: "Banaan", variants: ["banaan"] },
+      { label: "Sinaasappel", variants: ["sinaasappel"] },
+      { label: "Mandarijn", variants: ["mandarijn"] },
+      { label: "Druif", variants: ["druif", "druiven"] },
+      { label: "Aardbei", variants: ["aardbei", "aardbeien"] },
+      { label: "Framboos", variants: ["framboos", "frambozen"] },
+      { label: "Kers", variants: ["kers", "kersen"] },
+      { label: "Perzik", variants: ["perzik"] },
+      { label: "Ananas", variants: ["ananas"] },
+      { label: "Mango", variants: ["mango"] },
+      { label: "Kiwi", variants: ["kiwi"] },
+      { label: "Meloen", variants: ["meloen"] },
+      { label: "Watermeloen", variants: ["watermeloen"] },
+      { label: "Citroen", variants: ["citroen"] },
+      { label: "Pruim", variants: ["pruim", "pruimen"] },
+      { label: "Abrikoos", variants: ["abrikoos", "abrikozen"] },
+      { label: "Bosbes", variants: ["bosbes", "bosbessen", "blauwe bes"] },
+      { label: "Granaatappel", variants: ["granaatappel"] }
     ]
   },
   {
-    subject: "Leonardo da Vinci",
+    question: "Noem staten van de Verenigde Staten.",
     keywords: [
-      { label: "Mona Lisa", variants: ["mona lisa"] },
-      { label: "Het Laatste Avondmaal", variants: ["laatste avondmaal", "het laatste avondmaal"] },
-      { label: "Uitvinder / vliegmachines", variants: ["uitvinder", "vliegmachine", "uitvindingen", "helikopter"] },
-      { label: "Spiegelschrift", variants: ["spiegelschrift", "achterstevoren schrijven"] },
-      { label: "Florence / Italië", variants: ["florence", "italie", "italiaan", "toscane"] }
-    ]
-  },
-  {
-    subject: "Muhammad Ali",
-    keywords: [
-      { label: "Boksen (zwaargewicht)", variants: ["boksen", "bokser", "zwaargewicht"] },
-      { label: "Geboren als Cassius Clay", variants: ["cassius clay", "clay"] },
-      { label: "Float like a butterfly", variants: ["float like a butterfly", "butterfly", "sting like a bee", "vlinder"] },
-      { label: "Weigerde dienst in Vietnam", variants: ["vietnam", "dienstweigering", "weigerde het leger"] },
-      { label: "Parkinson", variants: ["parkinson", "ziekte van parkinson"] }
-    ]
-  },
-  {
-    subject: "Anne Frank",
-    keywords: [
-      { label: "Dagboek", variants: ["dagboek", "het dagboek", "kitty"] },
-      { label: "Het Achterhuis", variants: ["achterhuis", "het achterhuis"] },
-      { label: "Amsterdam (Prinsengracht)", variants: ["amsterdam", "prinsengracht"] },
-      { label: "Ondergedoken", variants: ["ondergedoken", "onderduiken", "verstopt"] },
-      { label: "Bergen-Belsen (omgekomen)", variants: ["bergen belsen", "concentratiekamp", "kamp"] }
-    ]
-  },
-  {
-    subject: "Winston Churchill",
-    keywords: [
-      { label: "Brits premier", variants: ["premier", "minister president", "prime minister"] },
-      { label: "Tweede Wereldoorlog", variants: ["tweede wereldoorlog", "wereldoorlog"] },
-      { label: "Sigaar", variants: ["sigaar", "sigaren"] },
-      { label: "V-teken", variants: ["v teken", "victory", "overwinningsteken"] },
-      { label: "Nobelprijs voor de Literatuur", variants: ["nobelprijs", "literatuur", "nobelprijs literatuur"] }
-    ]
-  },
-  {
-    subject: "Frida Kahlo",
-    keywords: [
-      { label: "Mexico", variants: ["mexico", "mexicaans", "mexicaanse"] },
-      { label: "Zelfportretten", variants: ["zelfportretten", "zelfportret"] },
-      { label: "Doorlopende wenkbrauw", variants: ["wenkbrauw", "wenkbrauwen", "monobrauw"] },
-      { label: "Diego Rivera", variants: ["diego rivera", "rivera", "diego"] },
-      { label: "Busongeluk", variants: ["busongeluk", "ongeluk", "bus"] }
-    ]
-  },
-  {
-    subject: "De Beatles",
-    keywords: [
-      { label: "Liverpool", variants: ["liverpool"] },
-      { label: "John Lennon", variants: ["john lennon", "lennon"] },
-      { label: "Paul McCartney", variants: ["paul mccartney", "mccartney"] },
-      { label: "Abbey Road (zebrapad)", variants: ["abbey road", "zebrapad"] },
-      { label: "Yellow Submarine", variants: ["yellow submarine", "submarine"] }
-    ]
-  },
-  {
-    subject: "Charlie Chaplin",
-    keywords: [
-      { label: "Stomme films", variants: ["stomme film", "stomme films", "zwijgende film", "geen geluid"] },
-      { label: "Snorretje", variants: ["snor", "snorretje"] },
-      { label: "The Tramp / de zwerver", variants: ["tramp", "the tramp", "zwerver", "de zwerver"] },
-      { label: "The Great Dictator", variants: ["great dictator", "the great dictator", "dictator", "hitler parodie"] },
-      { label: "Bolhoed en wandelstok", variants: ["bolhoed", "wandelstok", "hoed en stok"] }
-    ]
-  },
-  {
-    subject: "Mozart",
-    keywords: [
-      { label: "Salzburg / Oostenrijk", variants: ["salzburg", "oostenrijk", "wenen"] },
-      { label: "Wonderkind", variants: ["wonderkind", "kindgenie", "componeerde als kind"] },
-      { label: "Die Zauberflöte / De Toverfluit", variants: ["zauberflote", "toverfluit", "de toverfluit"] },
-      { label: "Requiem (onvoltooid)", variants: ["requiem", "het requiem"] },
-      { label: "Jong gestorven (35)", variants: ["35", "vijfendertig", "jong gestorven", "jong overleden"] }
-    ]
-  },
-  {
-    subject: "Pablo Picasso",
-    keywords: [
-      { label: "Spanje (Málaga)", variants: ["spanje", "spaans", "malaga"] },
-      { label: "Kubisme", variants: ["kubisme", "het kubisme", "kubist"] },
-      { label: "Guernica", variants: ["guernica"] },
-      { label: "Blauwe periode", variants: ["blauwe periode", "blauw"] },
-      { label: "Vredesduif", variants: ["vredesduif", "duif", "de duif"] }
-    ]
-  },
-  {
-    subject: "Stephen Hawking",
-    keywords: [
-      { label: "Zwarte gaten", variants: ["zwarte gaten", "zwart gat", "hawkingstraling"] },
-      { label: "ALS / rolstoel", variants: ["als", "rolstoel", "spierziekte"] },
-      { label: "Spraakcomputer", variants: ["spraakcomputer", "computerstem", "stemcomputer"] },
-      { label: "A Brief History of Time", variants: ["a brief history of time", "brief history of time", "het heelal", "korte geschiedenis van de tijd"] },
-      { label: "Cambridge", variants: ["cambridge"] }
+      { label: "Californië", variants: ["californie", "california"] },
+      { label: "Texas", variants: ["texas"] },
+      { label: "Florida", variants: ["florida"] },
+      { label: "New York", variants: ["new york"] },
+      { label: "Alaska", variants: ["alaska"] },
+      { label: "Hawaï", variants: ["hawai", "hawaii"] },
+      { label: "Nevada", variants: ["nevada"] },
+      { label: "Arizona", variants: ["arizona"] },
+      { label: "Washington", variants: ["washington"] },
+      { label: "Oregon", variants: ["oregon"] },
+      { label: "Colorado", variants: ["colorado"] },
+      { label: "Utah", variants: ["utah"] },
+      { label: "Ohio", variants: ["ohio"] },
+      { label: "Michigan", variants: ["michigan"] },
+      { label: "Georgia", variants: ["georgia"] },
+      { label: "Virginia", variants: ["virginia"] },
+      { label: "Montana", variants: ["montana"] },
+      { label: "Kansas", variants: ["kansas"] },
+      { label: "Louisiana", variants: ["louisiana"] },
+      { label: "Tennessee", variants: ["tennessee"] }
     ]
   }
 ];
@@ -663,6 +1016,66 @@ const BANK_FINALE = [
       { label: "Kaatsheuvel", variants: ["kaatsheuvel", "brabant", "noord brabant"] },
       { label: "Baron 1898 / Python (achtbanen)", variants: ["baron", "python", "achtbaan", "achtbanen"] },
       { label: "Anton Pieck", variants: ["anton pieck", "pieck"] }
+    ]
+  },
+  {
+    subject: "Nederland",
+    keywords: [
+      { label: "Tulpen", variants: ["tulpen", "tulp"] },
+      { label: "Molens", variants: ["molens", "molen", "windmolens"] },
+      { label: "Kaas", variants: ["kaas", "gouda", "edammer"] },
+      { label: "Fietsen", variants: ["fietsen", "fiets"] },
+      { label: "Oranje", variants: ["oranje", "koningshuis", "koning"] }
+    ]
+  },
+  {
+    subject: "De ruimte",
+    keywords: [
+      { label: "Raket", variants: ["raket", "raketten"] },
+      { label: "Astronaut", variants: ["astronaut", "astronauten", "ruimtevaarder"] },
+      { label: "NASA", variants: ["nasa"] },
+      { label: "Zwaartekracht", variants: ["zwaartekracht", "gewichtloos", "gewichtloosheid"] },
+      { label: "Satelliet", variants: ["satelliet", "satellieten"] }
+    ]
+  },
+  {
+    subject: "Sprookjes",
+    keywords: [
+      { label: "Assepoester", variants: ["assepoester"] },
+      { label: "Roodkapje", variants: ["roodkapje"] },
+      { label: "Sneeuwwitje", variants: ["sneeuwwitje"] },
+      { label: "Hans en Grietje", variants: ["hans en grietje", "hans", "grietje"] },
+      { label: "Doornroosje", variants: ["doornroosje"] }
+    ]
+  },
+  {
+    subject: "Pizza",
+    keywords: [
+      { label: "Italië", variants: ["italie", "italiaans"] },
+      { label: "Margherita", variants: ["margherita", "margarita"] },
+      { label: "Mozzarella", variants: ["mozzarella"] },
+      { label: "Napels (bakermat)", variants: ["napels", "napoli"] },
+      { label: "Tomatensaus", variants: ["tomatensaus", "tomaat", "tomaten"] }
+    ]
+  },
+  {
+    subject: "Sherlock Holmes",
+    keywords: [
+      { label: "Dr. Watson", variants: ["watson", "dokter watson"] },
+      { label: "Baker Street 221B", variants: ["baker street", "221b"] },
+      { label: "Arthur Conan Doyle", variants: ["conan doyle", "arthur conan doyle", "doyle"] },
+      { label: "Moriarty (aartsvijand)", variants: ["moriarty"] },
+      { label: "Pijp / speurdershoed", variants: ["pijp", "hoed", "deerstalker", "vergrootglas"] }
+    ]
+  },
+  {
+    subject: "Dinosaurussen",
+    keywords: [
+      { label: "T. rex", variants: ["t rex", "tyrannosaurus", "tyrannosaurus rex"] },
+      { label: "Uitgestorven door meteoriet", variants: ["meteoriet", "uitgestorven", "asteroide", "inslag"] },
+      { label: "Fossielen", variants: ["fossielen", "fossiel", "botten"] },
+      { label: "Jurassic Park", variants: ["jurassic park", "jurassic"] },
+      { label: "Triceratops", variants: ["triceratops"] }
     ]
   }
 ];

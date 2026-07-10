@@ -74,6 +74,11 @@
   .status-text {
     text-align: center; color: #9aa0a6; min-height: 1.4em; margin-bottom: 10px; font-size: 0.95rem;
   }
+  .timer-bar {
+    display: none; height: 6px; background: #262a33; border-radius: 3px;
+    overflow: hidden; margin: 2px 0 10px;
+  }
+  .timer-fill { height: 100%; width: 100%; background: #4f8cff; }
   .transcript-box {
     background: #0f1115; border: 1px dashed #333; border-radius: 10px;
     padding: 10px 12px; min-height: 1.4em; text-align: center; color: #ddd;
@@ -153,6 +158,7 @@
       <div class="clock" id="clockB"><div class="name"></div><div class="time"></div></div>
     </div>
     <div class="status-text" id="statusText"></div>
+    <div class="timer-bar" id="timerBar"><div class="timer-fill" id="timerFill"></div></div>
     <div class="transcript-box" id="transcriptBox">&nbsp;</div>
     <div class="result-banner" id="resultBanner">&nbsp;</div>
 
@@ -207,7 +213,8 @@
         questionText = $("questionText"), keywordsBox = $("keywordsBox"),
         statusText = $("statusText"), transcriptBox = $("transcriptBox"),
         resultBanner = $("resultBanner"), progressText = $("progressText"),
-        scoreboard = $("scoreboard"), clocksBox = $("clocksBox");
+        scoreboard = $("scoreboard"), clocksBox = $("clocksBox"),
+        timerBar = $("timerBar"), timerFill = $("timerFill");
 
   // ---------- Setup screen ----------
   const playerNameInput = $("playerNameInput"), addPlayerBtn = $("addPlayerBtn"),
@@ -320,7 +327,9 @@
   }
 
   // Luister één keer. Resolvet {transcripts, command} — command kan ook van knoppen komen.
-  async function listenOnce(timeoutMs = 9000) {
+  // showBar: aftel-balk tonen voor de tijdslimiet. Uit bij rondes waar je eigen
+  // seconden al wegtikken (daar is de score zelf de klok) en in de finale.
+  async function listenOnce(timeoutMs = 9000, showBar = true) {
     await pauseGate();
     return new Promise((resolve) => {
       if (!SpeechRecognitionImpl) {
@@ -333,12 +342,27 @@
       recognition.interimResults = false;
       recognition.maxAlternatives = 3;
 
+      let barTimer = null;
+      if (showBar) {
+        timerBar.style.display = "block";
+        timerFill.style.width = "100%";
+        timerFill.style.background = "#4f8cff";
+        const barStart = Date.now();
+        barTimer = setInterval(() => {
+          const frac = Math.max(0, 1 - (Date.now() - barStart) / timeoutMs);
+          timerFill.style.width = (frac * 100) + "%";
+          if (frac < 0.3) timerFill.style.background = "#ff6b6b";
+        }, 100);
+      }
+
       let done = false;
       const finish = (result) => {
         if (done) return;
         done = true;
         activeListen = null;
         clearTimeout(timer);
+        if (barTimer) clearInterval(barTimer);
+        timerBar.style.display = "none";
         try { recognition.abort(); } catch (e) {}
         setMic(false);
         resolve(result);
@@ -365,7 +389,8 @@
   }
 
   // Zoals op tv: buiten 3-6-9 tikt je klok terug terwijl je nadenkt (alleen secondenmodus).
-  // De klok staat stil tijdens het voorlezen en tijdens pauze.
+  // De klok staat stil tijdens het voorlezen en tijdens pauze. Geen extra balk hier:
+  // het scorebord zelf ís de klok.
   async function listenTimed(player, timeoutMs = 9000) {
     if (mode !== "seconds" || !player) return listenOnce(timeoutMs);
     const snap = player.score;
@@ -378,7 +403,7 @@
       player.score = Math.max(0, snap - Math.round(elapsed / 1000));
       renderScoreboard(player);
     }, 250);
-    const res = await listenOnce(timeoutMs);
+    const res = await listenOnce(timeoutMs, false);
     clearInterval(ticker);
     if (!paused) elapsed += Date.now() - last;
     player.score = Math.max(0, snap - Math.round(elapsed / 1000));
@@ -428,7 +453,6 @@
   $("skipBtn").addEventListener("click", () => { window.speechSynthesis.cancel(); });
 
   // Tik op een verborgen keyword-balkje om het handmatig goed te rekenen.
-  // Werkt altijd tijdens een keyword-beurt, ook als er net niet geluisterd wordt.
   keywordsBox.addEventListener("click", (e) => {
     const el = e.target.closest(".kw");
     if (!el || !currentSlotHandler || el.classList.contains("found") || el.classList.contains("revealed")) return;
@@ -574,8 +598,8 @@
 
   // ---------- Rondes ----------
   // 3-6-9: negen vragen, alleen vraag 3, 6 en 9 leveren iets op.
-  // Goed antwoord = je houdt de beurt. "Pas" = de volgende speler mag dezelfde vraag proberen.
-  // Fout antwoord = antwoord wordt onthuld, beurt schuift door. Geen tikkende klok in deze ronde.
+  // Goed antwoord = je houdt de beurt. Fout of "pas" = de volgende speler mag
+  // dezelfde vraag proberen (antwoord wordt pas onthuld als iedereen geweest is).
   async function round369() {
     roundBanner.textContent = "Ronde · 3-6-9";
     clearStage();
@@ -714,18 +738,114 @@
     }
   }
 
+  // Ingelijst: één lange lijst, om de beurt precies één antwoord.
+  // Fout of pas = je ligt eruit voor deze vraag. Door tot iedereen uit is of de lijst vol.
   async function roundIngelijst() {
     roundBanner.textContent = "Ronde · Ingelijst";
     clearStage();
-    await speak(`Ingelijst. Iedere speler krijgt een beroemd persoon in de lijst. Noem zoveel mogelijk van de vijf feiten die wij zoeken. Elk goed antwoord: ${mode === "seconds" ? "vijftien seconden" : "punten"}. Wie past, geeft de rest door aan de anderen.`);
-    const subjects = pickFresh("ingelijst", BANK_INGELIJST, players.length);
-    for (let i = 0; i < players.length && i < subjects.length; i++) {
-      clearStage();
-      const s = subjects[i];
-      questionText.textContent = `🖼 ${s.subject}`;
-      progressText.textContent = `Ingelijst · ${s.subject}`;
-      await keywordRound(players[i], s.keywords, VAL_INGELIJST, `${players[i].name}. In de lijst: ${s.subject}. Wat weet je over deze persoon?`, `Wat weet je over ${s.subject}?`);
+    await speak(`Ingelijst. Eén vraag met een lange lijst goede antwoorden. Om de beurt geef je precies één antwoord, goed voor ${mode === "seconds" ? "vijftien seconden" : "een punt of twee"}. Fout of pas? Dan lig je eruit. We spelen door tot iedereen eruit ligt of de lijst compleet is.`);
+    const nQuestions = Math.min(2, Math.max(1, players.length));
+    const subjects = pickFresh("ingelijst", BANK_INGELIJST, nQuestions);
+    for (let si = 0; si < subjects.length; si++) {
+      await ingelijstQuestion(subjects[si], si % players.length);
     }
+  }
+
+  async function ingelijstQuestion(s, startIdx) {
+    clearStage();
+    const keywords = s.keywords;
+    const state = keywords.map(() => "hidden");
+    questionText.textContent = `🖼 ${s.question}`;
+    progressText.textContent = `Ingelijst · ${keywords.length} antwoorden`;
+    renderKeywordSlots(keywords, state);
+    const alive = players.map(() => true);
+    let cur = startIdx;
+    let manualIdx = -1; // slot-tap = goedgekeurd antwoord van de huidige speler
+    currentSlotHandler = (i) => {
+      if (state[i] !== "hidden") return;
+      manualIdx = i;
+      if (activeListen) activeListen.finish({ transcripts: null, command: "noop" });
+    };
+    await speak(`${s.question} Om de beurt één antwoord. ${players[startIdx].name} begint.`);
+    while (state.some(st => st === "hidden") && alive.some(a => a)) {
+      if (!alive[cur]) { cur = (cur + 1) % players.length; continue; }
+      const player = players[cur];
+      turnBanner.textContent = `${player.name} — één antwoord`;
+      renderScoreboard(player);
+      manualIdx = -1;
+      let retries = 1;
+      let outcome = null; // "hit" | "out"
+      while (outcome === null) {
+        const res = await listenTimed(player);
+        if (manualIdx >= 0 && state[manualIdx] === "hidden") {
+          state[manualIdx] = "found";
+          award(player, VAL_INGELIJST);
+          renderKeywordSlots(keywords, state);
+          showResult(true, `✅ ${keywords[manualIdx].label} (goedgekeurd)`);
+          manualIdx = -1;
+          outcome = "hit";
+          break;
+        }
+        manualIdx = -1;
+        if (res.command === "repeat") { await speak(s.question); continue; }
+        if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
+        if (res.command === "pass") { outcome = "out"; break; }
+        if (!res.transcripts) {
+          if (retries-- > 0) { statusText.textContent = "Niets gehoord — probeer nog één keer."; continue; }
+          outcome = "out";
+          break;
+        }
+        // precies één antwoord per beurt: alleen de eerste match telt
+        let hitIdx = -1;
+        for (const t of res.transcripts) {
+          for (let i = 0; i < keywords.length; i++) {
+            if (state[i] === "hidden" && isCorrectAnswer(t, keywords[i].variants)) { hitIdx = i; break; }
+          }
+          if (hitIdx >= 0) break;
+        }
+        if (hitIdx >= 0) {
+          state[hitIdx] = "found";
+          award(player, VAL_INGELIJST);
+          renderKeywordSlots(keywords, state);
+          showResult(true, `✅ ${keywords[hitIdx].label}`);
+          await speak("Juist.");
+          outcome = "hit";
+        } else {
+          showResult(false, "❌ Fout");
+          // venster voor de jury: slot-tap of "Goed" tijdens dit oordeel
+          const overridden = await wrongVerdict("Fout, of het staat niet in onze lijst.");
+          if (manualIdx >= 0 && state[manualIdx] === "hidden") {
+            state[manualIdx] = "found";
+            award(player, VAL_INGELIJST);
+            renderKeywordSlots(keywords, state);
+            showResult(true, `✅ ${keywords[manualIdx].label} (goedgekeurd)`);
+            manualIdx = -1;
+            outcome = "hit";
+          } else if (overridden) {
+            statusText.textContent = "Tik op het balkje van het gezegde antwoord.";
+          } else {
+            outcome = "out";
+          }
+        }
+      }
+      if (outcome === "out") {
+        alive[cur] = false;
+        await speak(`${player.name} ligt eruit.`);
+      }
+      cur = (cur + 1) % players.length;
+    }
+    currentSlotHandler = null;
+    const missed = keywords.filter((_, i) => state[i] === "hidden");
+    keywords.forEach((_, i) => { if (state[i] === "hidden") state[i] = "revealed"; });
+    renderKeywordSlots(keywords, state);
+    if (missed.length === 0) {
+      await speak("De hele lijst is gevonden!");
+    } else if (missed.length > 6) {
+      await speak(`Er bleven ${missed.length} antwoorden liggen. Ze staan op het scherm.`);
+    } else {
+      await speak(`Niet genoemd: ${missed.map(k => k.label).join(", ")}.`);
+    }
+    await wait(800);
   }
 
   // ---------- Finale ----------
@@ -798,13 +918,13 @@
           renderClocks(fin, cur);
           if (active.ms <= 0) { if (activeListen) activeListen.finish({ transcripts: null, command: "timeout" }); }
         }, 200);
-        const res = await listenOnce(Math.min(10000, active.ms + 500));
+        const res = await listenOnce(Math.min(10000, active.ms + 500), false);
         clearInterval(ticker);
         active.ms = Math.max(0, active.msSnapshot - (Date.now() - tickStart));
         renderClocks(fin, cur);
         if (active.ms <= 0) break outer;
 
-        if (res.command === "noop") continue; // slot-tap; wordt bovenaan de lus verwerkt
+        if (res.command === "noop") continue; // slot-tap; bovenaan de lus verwerkt
         if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
         if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
         if (res.command === "pass" || res.command === "timeout" || !res.transcripts) {
