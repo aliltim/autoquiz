@@ -195,6 +195,7 @@
   const START_SECONDS = 60;
   const VAL_369 = 10, VAL_OPENDEUR = 20, VAL_PUZZEL = 30, VAL_GEHEUGEN = 15, VAL_INGELIJST = 15;
   const N_369_QUESTIONS = 9; // 9 vragen, alleen 3, 6 en 9 leveren iets op
+  const FINALE_STEAL = 10;   // seconden die elk goed finale-antwoord bij de tegenstander wegneemt
   const PUZZELS_PER_PLAYER = 2;
   const MAX_MISSES = 2; // opeenvolgende niet-gematchte antwoorden voor keyword-beurten
 
@@ -877,7 +878,9 @@
     const ranked = players.slice().sort((x, y) => y.score - x.score);
     const [p1, p2] = [ranked[0], ranked[1]];
     if (players.length > 2) {
-      await speak(`De finale wordt gespeeld door ${p1.name} en ${p2.name}. De rest is uitgeschakeld.`);
+      // de spelers met de minste punten vallen af; de beste twee spelen de finale
+      const dropped = ranked.slice(2).map(p => p.name);
+      await speak(`${dropped.join(" en ")} ${dropped.length === 1 ? "valt" : "vallen"} af met de minste ${mode === "seconds" ? "seconden" : "punten"}. De finale gaat tussen ${p1.name} en ${p2.name}.`);
     }
 
     if (mode === "points") return finalePoints(p1, p2);
@@ -887,7 +890,7 @@
       { player: p2, ms: Math.max(15, p2.score) * 1000 }, // laagste begint
       { player: p1, ms: Math.max(15, p1.score) * 1000 }
     ];
-    await speak(`De finale. Jullie seconden zijn nu je levenslijn. Wie aan de beurt is, verliest tijd tijdens het nadenken. Goede antwoorden mag je blijven geven. Zeg je pas, dan gaan de beurt en de klok naar je tegenstander. Wie op nul staat, verliest. ${fin[0].player.name} begint.`);
+    await speak(`De finale. Jullie seconden zijn je levenslijn. Wie aan de beurt is, verliest tijd tijdens het nadenken, en elk goed antwoord haalt ${FINALE_STEAL} seconden van de klok van je tegenstander af. Goede antwoorden mag je blijven geven. Zeg je pas, dan gaan de beurt en de klok naar je tegenstander. Wie op nul staat, verliest. ${fin[0].player.name} begint.`);
     const subjects = pickFresh("finale", BANK_FINALE, Math.min(6, BANK_FINALE.length));
     let cur = 0; // index in fin
     let si = 0;
@@ -903,18 +906,23 @@
         manualHit = true;
         if (activeListen) activeListen.finish({ transcripts: null, command: "noop" });
       };
+      const vraag = subject.prompt || `Wat weet je over ${subject.subject.replace(/^(De|Het) /, (m) => m.toLowerCase())}?`;
       clearStage();
-      questionText.textContent = subject.subject;
+      questionText.textContent = vraag;
       renderKeywordSlots(subject.keywords, state);
       renderClocks(fin, cur);
-      await speak(`Het onderwerp is: ${subject.subject}. Noem wat je weet.`);
+      await speak(vraag);
       let consecutivePasses = 0;
       while (state.some(s => s === "hidden")) {
         if (manualHit) {
           manualHit = false;
           consecutivePasses = 0;
-          // goedgekeurd antwoord: dezelfde speler mag door
-          await speak("Goed gerekend. Ga door.");
+          // goedgekeurd antwoord telt volledig mee: tijd van de tegenstander af
+          const opp = fin[1 - cur];
+          opp.ms = Math.max(0, opp.ms - FINALE_STEAL * 1000);
+          renderClocks(fin, cur);
+          if (opp.ms <= 0) break outer;
+          await speak(`Goed gerekend. ${FINALE_STEAL} seconden van ${opp.player.name} af. Ga door.`);
           continue;
         }
         const active = fin[cur];
@@ -935,7 +943,7 @@
         if (active.ms <= 0) break outer;
 
         if (res.command === "noop") continue; // slot-tap; bovenaan de lus verwerkt
-        if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
+        if (res.command === "repeat") { await speak(vraag); continue; }
         if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
         if (res.command === "pass") {
           consecutivePasses++;
@@ -962,8 +970,12 @@
           consecutivePasses = 0;
           renderKeywordSlots(subject.keywords, state);
           showResult(true, `✅ ${hits.join(", ")}`);
-          // goed antwoord: dezelfde speler mag door
-          await speak(`Juist: ${hits.join(", en ")}. Ga door.`);
+          // elk goed antwoord haalt tijd van de klok van de tegenstander af; zelf mag je door
+          const opp = fin[1 - cur];
+          opp.ms = Math.max(0, opp.ms - hits.length * FINALE_STEAL * 1000);
+          renderClocks(fin, cur);
+          if (opp.ms <= 0) break outer;
+          await speak(`Juist: ${hits.join(", en ")}. ${hits.length * FINALE_STEAL} seconden van ${opp.player.name} af. Ga door.`);
         } else {
           showResult(false, "❌");
           // klok liep al door tijdens deze poging; direct opnieuw luisteren
@@ -996,10 +1008,11 @@
         manualHit = true;
         if (activeListen) activeListen.finish({ transcripts: null, command: "noop" });
       };
+      const vraag = subject.prompt || `Wat weet je over ${subject.subject.replace(/^(De|Het) /, (m) => m.toLowerCase())}?`;
       clearStage();
-      questionText.textContent = subject.subject;
+      questionText.textContent = vraag;
       renderKeywordSlots(subject.keywords, state);
-      await speak(`Het onderwerp is: ${subject.subject}.`);
+      await speak(vraag);
       let strikes = 0; // 2 missers na elkaar (beide spelers samen) = volgend onderwerp
       while (state.some(s => s === "hidden") && strikes < 2) {
         if (manualHit) {
@@ -1010,7 +1023,7 @@
         turnBanner.textContent = `${cur.name} is aan de beurt`;
         const res = await listenOnce();
         if (res.command === "noop") continue; // slot-tap; bovenaan de lus verwerkt
-        if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
+        if (res.command === "repeat") { await speak(vraag); continue; }
         if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
         let hit = false;
         if (res.transcripts && res.command !== "pass") {

@@ -1067,6 +1067,28 @@ const BANK_FINALE = [
       { label: "Jurassic Park", variants: ["jurassic park", "jurassic"] },
       { label: "Triceratops", variants: ["triceratops"] }
     ]
+  },
+  {
+    subject: "Alexander de Grote",
+    prompt: "Wat weet je over Alexander de Grote?",
+    keywords: [
+      { label: "Koning van Macedonië", variants: ["macedonie", "macedonier", "koning van macedonie"] },
+      { label: "Leerling van Aristoteles", variants: ["aristoteles"] },
+      { label: "Veroverde het Perzische Rijk", variants: ["perzie", "perzische rijk", "perzen", "darius"] },
+      { label: "Paard Bucephalus", variants: ["bucephalus", "bucefalos", "boekefalos"] },
+      { label: "Gestorven in Babylon (32 jaar)", variants: ["babylon", "32", "tweeendertig", "jong gestorven"] }
+    ]
+  },
+  {
+    subject: "De Vikingen",
+    prompt: "Wat weet je over de Vikingen?",
+    keywords: [
+      { label: "Scandinavië", variants: ["scandinavie", "noorwegen", "denemarken", "zweden"] },
+      { label: "Langschepen (drakkars)", variants: ["langschepen", "drakkar", "drakenschepen", "langschip"] },
+      { label: "Plunderden kloosters", variants: ["plunderen", "plunderingen", "kloosters", "rooftochten"] },
+      { label: "Odin / Walhalla", variants: ["odin", "walhalla", "thor", "noordse goden"] },
+      { label: "Leif Erikson bereikte Amerika", variants: ["leif erikson", "amerika", "vinland"] }
+    ]
   }
 ];
 
