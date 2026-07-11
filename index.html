@@ -692,6 +692,7 @@
           if (!solved && attempts < 2) await speak("Nee, dat is het niet. Nog één poging.");
         }
         if (!solved) {
+          showResult(false, `❌ Het was: ${puz.answer.label}`); // eerst op het scherm, dan pas voorlezen
           // "Goed" tijdens de onthulling keurt alsnog goed
           solved = await wrongVerdict(`Het verband was: ${puz.answer.label}.`);
         }
@@ -727,6 +728,7 @@
         const q = st.questions[qi];
         let outcome = await askSingle(player, q.q, q.answers, { timed: true });
         if (outcome !== "correct") {
+          showResult(false, `❌ ${q.answers[0]}`); // eerst op het scherm, dan pas voorlezen
           const overridden = await wrongVerdict(`Nee, het was: ${q.answers[0]}.`);
           if (overridden) outcome = "correct";
         }
@@ -885,7 +887,7 @@
       { player: p2, ms: Math.max(15, p2.score) * 1000 }, // laagste begint
       { player: p1, ms: Math.max(15, p1.score) * 1000 }
     ];
-    await speak(`De finale. Jullie seconden zijn nu je levenslijn. Wie aan de beurt is, verliest tijd tijdens het nadenken. Een goed sleutelwoord geeft de beurt, en de klok, aan je tegenstander. Wie op nul staat, verliest. ${fin[0].player.name} begint.`);
+    await speak(`De finale. Jullie seconden zijn nu je levenslijn. Wie aan de beurt is, verliest tijd tijdens het nadenken. Goede antwoorden mag je blijven geven. Zeg je pas, dan gaan de beurt en de klok naar je tegenstander. Wie op nul staat, verliest. ${fin[0].player.name} begint.`);
     const subjects = pickFresh("finale", BANK_FINALE, Math.min(6, BANK_FINALE.length));
     let cur = 0; // index in fin
     let si = 0;
@@ -911,8 +913,8 @@
         if (manualHit) {
           manualHit = false;
           consecutivePasses = 0;
-          cur = 1 - cur; // handmatig goedgekeurd antwoord geeft de beurt door
-          await speak(`Goed gerekend. ${fin[cur].player.name}, jouw klok loopt.`);
+          // goedgekeurd antwoord: dezelfde speler mag door
+          await speak("Goed gerekend. Ga door.");
           continue;
         }
         const active = fin[cur];
@@ -935,16 +937,21 @@
         if (res.command === "noop") continue; // slot-tap; bovenaan de lus verwerkt
         if (res.command === "repeat") { await speak(`Het onderwerp is ${subject.subject}.`); continue; }
         if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
-        if (res.command === "pass" || res.command === "timeout" || !res.transcripts) {
+        if (res.command === "pass") {
           consecutivePasses++;
           if (consecutivePasses >= 2) {
-            const missed = subject.keywords.filter((_, i) => state[i] === "hidden");
-            if (missed.length) await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`);
-            break; // volgend onderwerp, zelfde speler blijft aan zet
+            // beiden gepast: onthul eerst op het scherm, lees dan pas voor
+            subject.keywords.forEach((_, i) => { if (state[i] === "hidden") state[i] = "revealed"; });
+            renderKeywordSlots(subject.keywords, state);
+            const missed = subject.keywords.filter((_, i) => state[i] === "revealed");
+            if (missed.length) { await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`); await wait(900); }
+            break; // volgend onderwerp
           }
-          await speak("De klok loopt door!");
+          cur = 1 - cur; // pas: beurt en klok naar de tegenstander
+          await speak(`Gepast. ${fin[cur].player.name}, jouw klok loopt.`);
           continue;
         }
+        if (res.command === "timeout" || !res.transcripts) continue; // klok liep al door; opnieuw proberen
         const hits = [];
         subject.keywords.forEach((kw, i) => {
           if (state[i] === "hidden" && res.transcripts.some(t => isCorrectAnswer(t, kw.variants))) {
@@ -955,8 +962,8 @@
           consecutivePasses = 0;
           renderKeywordSlots(subject.keywords, state);
           showResult(true, `✅ ${hits.join(", ")}`);
-          cur = 1 - cur; // beurt (en klok) naar tegenstander
-          await speak(`Juist: ${hits.join(", en ")}. ${fin[cur].player.name}, jouw klok loopt.`);
+          // goed antwoord: dezelfde speler mag door
+          await speak(`Juist: ${hits.join(", en ")}. Ga door.`);
         } else {
           showResult(false, "❌");
           // klok liep al door tijdens deze poging; direct opnieuw luisteren
@@ -997,8 +1004,7 @@
       while (state.some(s => s === "hidden") && strikes < 2) {
         if (manualHit) {
           manualHit = false;
-          strikes = 0;
-          cur = cur === p1 ? p2 : p1;
+          strikes = 0; // goedgekeurd: zelfde speler mag door
           continue;
         }
         turnBanner.textContent = `${cur.name} is aan de beurt`;
@@ -1019,16 +1025,19 @@
           strikes = 0;
           renderKeywordSlots(subject.keywords, state);
           showResult(true, `✅ ${cur.name}: ${tally.get(cur)}`);
-          await speak("Juist.");
+          await speak("Juist. Ga door."); // goed antwoord: zelfde speler mag door
         } else {
           strikes++;
           showResult(false, "❌");
-          await speak("Nee.");
+          cur = cur === p1 ? p2 : p1; // pas of fout: beurt naar de ander
+          if (strikes < 2) await speak(`${cur.name}, jouw beurt.`);
         }
-        cur = cur === p1 ? p2 : p1; // beurt wisselt altijd
       }
-      const missed = subject.keywords.filter((_, i) => state[i] === "hidden");
-      if (missed.length) await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`);
+      // onthulling: eerst op het scherm, dan pas voorlezen
+      subject.keywords.forEach((_, i) => { if (state[i] === "hidden") state[i] = "revealed"; });
+      renderKeywordSlots(subject.keywords, state);
+      const missed = subject.keywords.filter((_, i) => state[i] === "revealed");
+      if (missed.length) { await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`); await wait(900); }
     }
     currentSlotHandler = null;
     const s1 = tally.get(p1), s2 = tally.get(p2);
