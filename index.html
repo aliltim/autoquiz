@@ -303,6 +303,29 @@
     return chosen.map(i => bank[i]);
   }
 
+  // Korte geluidjes (WebAudio, geen bestanden nodig) voor rapid-fire feedback in de finale
+  let audioCtx = null;
+  function initAudio() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    } catch (e) {}
+  }
+  function beep(freq, ms, type = "sine", vol = 0.35) {
+    if (!audioCtx) return;
+    try {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.value = vol;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + ms / 1000);
+      o.stop(audioCtx.currentTime + ms / 1000);
+    } catch (e) {}
+  }
+  function dingGoed() { beep(880, 120); setTimeout(() => beep(1318, 170), 110); }
+  function buzzFout() { beep(170, 260, "square", 0.25); }
+
   // Pauze: speak() en listenOnce() wachten hier tot er hervat wordt.
   function pauseGate() {
     if (!paused) return Promise.resolve();
@@ -921,8 +944,9 @@
           const opp = fin[1 - cur];
           opp.ms = Math.max(0, opp.ms - FINALE_STEAL * 1000);
           renderClocks(fin, cur);
+          dingGoed(); // rapid-fire: geluidje in plaats van spraak
           if (opp.ms <= 0) break outer;
-          await speak(`Goed gerekend. ${FINALE_STEAL} seconden van ${opp.player.name} af. Ga door.`);
+          statusText.textContent = `−${FINALE_STEAL}s voor ${opp.player.name} — ga door!`;
           continue;
         }
         const active = fin[cur];
@@ -955,8 +979,9 @@
             if (missed.length) { await speak(`Niet gevonden: ${missed.map(k => k.label).join(", ")}.`); await wait(900); }
             break; // volgend onderwerp
           }
+          buzzFout();
           cur = 1 - cur; // pas: beurt en klok naar de tegenstander
-          await speak(`Gepast. ${fin[cur].player.name}, jouw klok loopt.`);
+          await speak(`${fin[cur].player.name}, jouw klok loopt.`);
           continue;
         }
         if (res.command === "timeout" || !res.transcripts) continue; // klok liep al door; opnieuw proberen
@@ -974,10 +999,12 @@
           const opp = fin[1 - cur];
           opp.ms = Math.max(0, opp.ms - hits.length * FINALE_STEAL * 1000);
           renderClocks(fin, cur);
+          dingGoed(); // rapid-fire: geen spraak, direct weer luisteren
           if (opp.ms <= 0) break outer;
-          await speak(`Juist: ${hits.join(", en ")}. ${hits.length * FINALE_STEAL} seconden van ${opp.player.name} af. Ga door.`);
+          statusText.textContent = `−${hits.length * FINALE_STEAL}s voor ${opp.player.name} — ga door!`;
         } else {
           showResult(false, "❌");
+          buzzFout();
           // klok liep al door tijdens deze poging; direct opnieuw luisteren
         }
       }
@@ -1018,6 +1045,7 @@
         if (manualHit) {
           manualHit = false;
           strikes = 0; // goedgekeurd: zelfde speler mag door
+          dingGoed();
           continue;
         }
         turnBanner.textContent = `${cur.name} is aan de beurt`;
@@ -1038,10 +1066,11 @@
           strikes = 0;
           renderKeywordSlots(subject.keywords, state);
           showResult(true, `✅ ${cur.name}: ${tally.get(cur)}`);
-          await speak("Juist. Ga door."); // goed antwoord: zelfde speler mag door
+          dingGoed(); // rapid-fire: geen spraak, direct door
         } else {
           strikes++;
           showResult(false, "❌");
+          buzzFout();
           cur = cur === p1 ? p2 : p1; // pas of fout: beurt naar de ander
           if (strikes < 2) await speak(`${cur.name}, jouw beurt.`);
         }
@@ -1102,6 +1131,7 @@
 
   startBtn.addEventListener("click", () => {
     if (players.length < 1) return;
+    initAudio(); // WebAudio vereist een gebruikersactie; deze klik is het moment
     document.getElementById("setup").style.display = "none";
     document.getElementById("game").style.display = "block";
     runGame().catch(err => {

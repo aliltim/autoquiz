@@ -885,9 +885,9 @@ const BANK_INGELIJST = [
 ];
 
 // ---------------------------------------------------------------------------
-// Finale — onderwerp, 5 sleutelwoorden, klokken tellen af
+// Oude, bredere finale-onderwerpen — bewaard als reserve, niet in gebruik
 // ---------------------------------------------------------------------------
-const BANK_FINALE = [
+const BANK_FINALE_RESERVE = [
   {
     subject: "Parijs",
     keywords: [
@@ -1092,6 +1092,254 @@ const BANK_FINALE = [
   }
 ];
 
+// ---------------------------------------------------------------------------
+// Finale — niche onderwerpen als vraag, 5 sleutelwoorden, klokken tellen af
+// ---------------------------------------------------------------------------
+const BANK_FINALE = [
+  {
+    subject: "The Wolf of Wall Street",
+    prompt: "Wat kun je vertellen over The Wolf of Wall Street?",
+    keywords: [
+      { label: "Leonardo DiCaprio", variants: ["leonardo dicaprio", "dicaprio", "leonardo di caprio"] },
+      { label: "Jordan Belfort (echte oplichter)", variants: ["jordan belfort", "belfort"] },
+      { label: "Beursfraude / penny stocks", variants: ["beursfraude", "penny stocks", "aandelen", "oplichting", "beurshandelaar"] },
+      { label: "Regie: Martin Scorsese", variants: ["scorsese", "martin scorsese"] },
+      { label: "Drugs / quaaludes", variants: ["drugs", "quaaludes", "cocaine"] }
+    ]
+  },
+  {
+    subject: "Eritrea",
+    prompt: "Wat weet je over Eritrea?",
+    keywords: [
+      { label: "Hoorn van Afrika", variants: ["hoorn van afrika", "oost afrika", "afrika"] },
+      { label: "Hoofdstad Asmara", variants: ["asmara"] },
+      { label: "Onafhankelijk van Ethiopië (1993)", variants: ["ethiopie", "1993", "onafhankelijk van ethiopie"] },
+      { label: "Kust aan de Rode Zee", variants: ["rode zee"] },
+      { label: "Dictatuur (Isaias Afwerki)", variants: ["dictatuur", "afwerki", "eenpartijstaat", "dictator"] }
+    ]
+  },
+  {
+    subject: "De Bee Gees",
+    prompt: "Wat weet je over de Bee Gees?",
+    keywords: [
+      { label: "Broers Gibb", variants: ["gibb", "broers", "barry gibb", "drie broers"] },
+      { label: "Stayin' Alive", variants: ["stayin alive", "staying alive"] },
+      { label: "Disco", variants: ["disco", "discomuziek"] },
+      { label: "Saturday Night Fever", variants: ["saturday night fever", "night fever"] },
+      { label: "Falsetto (hoge stemmen)", variants: ["falsetto", "hoge stemmen", "hoge stem"] }
+    ]
+  },
+  {
+    subject: "Het Eurovisie Songfestival",
+    prompt: "Wat weet je over het Eurovisie Songfestival?",
+    keywords: [
+      { label: "ABBA won met Waterloo", variants: ["abba", "waterloo"] },
+      { label: "Douze points", variants: ["douze points", "twaalf punten"] },
+      { label: "Duncan Laurence won voor Nederland (2019)", variants: ["duncan laurence", "arcade", "2019"] },
+      { label: "Sinds 1956", variants: ["1956", "negentien zesenvijftig"] },
+      { label: "Winnend land organiseert de volgende editie", variants: ["winnaar organiseert", "gastland", "volgend jaar", "organiseert"] }
+    ]
+  },
+  {
+    subject: "Tsaar Peter de Grote",
+    prompt: "Wat weet je over tsaar Peter de Grote?",
+    keywords: [
+      { label: "Tsaar van Rusland", variants: ["rusland", "tsaar van rusland"] },
+      { label: "Stichtte Sint-Petersburg", variants: ["sint petersburg", "petersburg"] },
+      { label: "Leerde scheepsbouw in Zaandam", variants: ["zaandam", "scheepsbouw", "nederland", "scheepstimmerman"] },
+      { label: "Baardbelasting", variants: ["baardbelasting", "baarden", "belasting op baarden"] },
+      { label: "Ruim twee meter lang", variants: ["twee meter", "heel lang", "reus"] }
+    ]
+  },
+  {
+    subject: "Monopoly",
+    prompt: "Wat weet je over Monopoly?",
+    keywords: [
+      { label: "Kalverstraat (duurste straat)", variants: ["kalverstraat"] },
+      { label: "Vrij Parkeren", variants: ["vrij parkeren"] },
+      { label: "Ga direct naar de gevangenis", variants: ["gevangenis", "ga direct naar de gevangenis"] },
+      { label: "Huizen en hotels bouwen", variants: ["hotels", "huizen", "huizen en hotels"] },
+      { label: "Meneer Monopoly (hoge hoed)", variants: ["meneer monopoly", "hoge hoed", "mannetje met hoed"] }
+    ]
+  },
+  {
+    subject: "De Rubiks kubus",
+    prompt: "Wat weet je over de Rubiks kubus?",
+    keywords: [
+      { label: "Ernő Rubik (uitvinder)", variants: ["rubik", "erno rubik"] },
+      { label: "Hongarije", variants: ["hongarije", "hongaars"] },
+      { label: "Zes kleuren / vlakken", variants: ["zes kleuren", "zes vlakken", "6 kleuren"] },
+      { label: "Speedcubing (records in seconden)", variants: ["speedcubing", "wereldrecord", "op tijd"] },
+      { label: "Rage in de jaren 80", variants: ["jaren 80", "jaren tachtig", "tachtig"] }
+    ]
+  },
+  {
+    subject: "Breaking Bad",
+    prompt: "Wat weet je over Breaking Bad?",
+    keywords: [
+      { label: "Walter White", variants: ["walter white", "walter", "bryan cranston"] },
+      { label: "Scheikundeleraar", variants: ["scheikundeleraar", "scheikunde", "leraar"] },
+      { label: "Crystal meth", variants: ["meth", "crystal meth", "drugs koken"] },
+      { label: "Heisenberg (schuilnaam)", variants: ["heisenberg"] },
+      { label: "Jesse Pinkman", variants: ["jesse pinkman", "jesse"] }
+    ]
+  },
+  {
+    subject: "Mount Rushmore",
+    prompt: "Wat weet je over Mount Rushmore?",
+    keywords: [
+      { label: "Vier presidentenhoofden", variants: ["vier presidenten", "presidenten", "vier hoofden"] },
+      { label: "Zuid-Dakota", variants: ["zuid dakota", "south dakota"] },
+      { label: "Lincoln / Washington / Jefferson / Roosevelt", variants: ["lincoln", "washington", "jefferson", "roosevelt"] },
+      { label: "Uitgehakt in de rots", variants: ["uitgehakt", "in de rots", "graniet", "berg"] },
+      { label: "Beeldhouwer Gutzon Borglum", variants: ["borglum", "gutzon borglum"] }
+    ]
+  },
+  {
+    subject: "Bhutan",
+    prompt: "Wat weet je over Bhutan?",
+    keywords: [
+      { label: "Himalaya", variants: ["himalaya", "bergen"] },
+      { label: "Hoofdstad Thimphu", variants: ["thimphu", "thimpu"] },
+      { label: "Bruto Nationaal Geluk", variants: ["bruto nationaal geluk", "geluk", "gelukkigste land"] },
+      { label: "Draak op de vlag", variants: ["draak", "drakenvlag", "donderdraak"] },
+      { label: "Boeddhisme", variants: ["boeddhisme", "boeddhistisch"] }
+    ]
+  },
+  {
+    subject: "De Slag bij Nieuwpoort",
+    prompt: "Wat weet je over de Slag bij Nieuwpoort?",
+    keywords: [
+      { label: "1600", variants: ["1600", "zestienhonderd"] },
+      { label: "Prins Maurits", variants: ["maurits", "prins maurits", "maurits van oranje"] },
+      { label: "Tachtigjarige Oorlog", variants: ["tachtigjarige oorlog", "opstand"] },
+      { label: "Gevochten op het strand", variants: ["strand", "duinen", "op het strand"] },
+      { label: "Tegen Spanje", variants: ["spanje", "spanjaarden", "spaanse leger"] }
+    ]
+  },
+  {
+    subject: "Salvador Dalí",
+    prompt: "Wat weet je over Salvador Dalí?",
+    keywords: [
+      { label: "Surrealisme", variants: ["surrealisme", "surrealist"] },
+      { label: "Smeltende klokken", variants: ["smeltende klokken", "klokken", "de volharding der herinnering"] },
+      { label: "Opgedraaide snor", variants: ["snor", "opgedraaide snor"] },
+      { label: "Spanje / Figueres", variants: ["spanje", "spanjaard", "figueres", "catalonie"] },
+      { label: "Muze en vrouw Gala", variants: ["gala"] }
+    ]
+  },
+  {
+    subject: "De Elfstedentocht",
+    prompt: "Wat weet je over de Elfstedentocht?",
+    keywords: [
+      { label: "Friesland", variants: ["friesland", "fries", "friese steden"] },
+      { label: "Bijna 200 kilometer", variants: ["200 kilometer", "tweehonderd kilometer", "199"] },
+      { label: "Laatste editie in 1997", variants: ["1997", "negentien zevenennegentig"] },
+      { label: "Klunen", variants: ["klunen"] },
+      { label: "Elfstedenkruisje", variants: ["kruisje", "elfstedenkruisje"] }
+    ]
+  },
+  {
+    subject: "Tetris",
+    prompt: "Wat weet je over Tetris?",
+    keywords: [
+      { label: "Vallende blokjes", variants: ["vallende blokjes", "blokjes", "tetromino"] },
+      { label: "Bedacht in de Sovjet-Unie", variants: ["sovjet unie", "rusland", "russisch"] },
+      { label: "Aleksej Pazjitnov (bedenker)", variants: ["pazjitnov", "pajitnov", "aleksej"] },
+      { label: "Game Boy", variants: ["game boy", "gameboy", "nintendo"] },
+      { label: "Volle lijnen verdwijnen", variants: ["lijnen", "rijen", "lijnen wegspelen"] }
+    ]
+  },
+  {
+    subject: "Pablo Escobar",
+    prompt: "Wat weet je over Pablo Escobar?",
+    keywords: [
+      { label: "Colombia", variants: ["colombia", "colombiaans"] },
+      { label: "Medellínkartel", variants: ["medellin", "medellinkartel", "kartel"] },
+      { label: "Cocaïne", variants: ["cocaine", "coke", "drugs"] },
+      { label: "Ontsnapte nijlpaarden", variants: ["nijlpaarden", "nijlpaard"] },
+      { label: "Doodgeschoten in 1993", variants: ["1993", "doodgeschoten", "op het dak"] }
+    ]
+  },
+  {
+    subject: "K2",
+    prompt: "Wat weet je over de berg K2?",
+    keywords: [
+      { label: "Op één na hoogste berg ter wereld", variants: ["tweede hoogste", "op een na hoogste", "een na hoogste"] },
+      { label: "Karakoram-gebergte", variants: ["karakoram"] },
+      { label: "Grens Pakistan-China", variants: ["pakistan", "china"] },
+      { label: "Savage Mountain (dodelijker dan de Everest)", variants: ["savage mountain", "gevaarlijk", "dodelijk", "dodelijker dan de everest"] },
+      { label: "8611 meter", variants: ["8611", "achtduizend zeshonderd elf"] }
+    ]
+  },
+  {
+    subject: "De Nachtwacht",
+    prompt: "Wat weet je over De Nachtwacht?",
+    keywords: [
+      { label: "Rembrandt", variants: ["rembrandt", "rembrandt van rijn"] },
+      { label: "Geschilderd in 1642", variants: ["1642", "zestienhonderd tweeenveertig", "zeventiende eeuw"] },
+      { label: "Schutterij van Frans Banninck Cocq", variants: ["schutterij", "banninck cocq", "schutters"] },
+      { label: "Rijksmuseum", variants: ["rijksmuseum"] },
+      { label: "Meerdere keren aangevallen (mes, zuur)", variants: ["mes", "aangevallen", "zuur", "vandalisme"] }
+    ]
+  },
+  {
+    subject: "Fidel Castro",
+    prompt: "Wat weet je over Fidel Castro?",
+    keywords: [
+      { label: "Cuba", variants: ["cuba", "cubaans"] },
+      { label: "Revolutie van 1959", variants: ["revolutie", "1959", "batista"] },
+      { label: "Sigaren", variants: ["sigaren", "sigaar"] },
+      { label: "Varkensbaai-invasie", variants: ["varkensbaai", "bay of pigs"] },
+      { label: "Opgevolgd door broer Raúl", variants: ["raul", "broer", "raul castro"] }
+    ]
+  },
+  {
+    subject: "Bob Marley",
+    prompt: "Wat weet je over Bob Marley?",
+    keywords: [
+      { label: "Reggae", variants: ["reggae"] },
+      { label: "Jamaica", variants: ["jamaica", "jamaicaans"] },
+      { label: "Rastafari / dreadlocks", variants: ["rastafari", "rasta", "dreadlocks", "dreads"] },
+      { label: "One Love / No Woman No Cry", variants: ["one love", "no woman no cry", "redemption song"] },
+      { label: "The Wailers", variants: ["wailers", "the wailers"] }
+    ]
+  },
+  {
+    subject: "Willem van Oranje",
+    prompt: "Wat weet je over Willem van Oranje?",
+    keywords: [
+      { label: "Vader des Vaderlands", variants: ["vader des vaderlands"] },
+      { label: "Vermoord in Delft", variants: ["delft", "vermoord", "vermoord in delft"] },
+      { label: "Balthasar Gerards (moordenaar)", variants: ["balthasar gerards", "gerards", "balthazar gerards"] },
+      { label: "Opstand tegen Spanje / Filips II", variants: ["spanje", "filips", "filips de tweede", "tachtigjarige oorlog"] },
+      { label: "Het Wilhelmus", variants: ["wilhelmus", "het wilhelmus", "volkslied"] }
+    ]
+  },
+  {
+    subject: "Alexander de Grote",
+    prompt: "Wat weet je over Alexander de Grote?",
+    keywords: [
+      { label: "Koning van Macedonië", variants: ["macedonie", "macedonier", "koning van macedonie"] },
+      { label: "Leerling van Aristoteles", variants: ["aristoteles"] },
+      { label: "Veroverde het Perzische Rijk", variants: ["perzie", "perzische rijk", "perzen", "darius"] },
+      { label: "Paard Bucephalus", variants: ["bucephalus", "bucefalos", "boekefalos"] },
+      { label: "Gestorven in Babylon (32 jaar)", variants: ["babylon", "32", "tweeendertig", "jong gestorven"] }
+    ]
+  },
+  {
+    subject: "De Vikingen",
+    prompt: "Wat weet je over de Vikingen?",
+    keywords: [
+      { label: "Scandinavië", variants: ["scandinavie", "noorwegen", "denemarken", "zweden"] },
+      { label: "Langschepen (drakkars)", variants: ["langschepen", "drakkar", "drakenschepen", "langschip"] },
+      { label: "Plunderden kloosters", variants: ["plunderen", "plunderingen", "kloosters", "rooftochten"] },
+      { label: "Odin / Walhalla", variants: ["odin", "walhalla", "thor", "noordse goden"] },
+      { label: "Leif Erikson bereikte Amerika", variants: ["leif erikson", "amerika", "vinland"] }
+    ]
+  }
+];
+
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { BANK_369, BANK_OPENDEUR, BANK_PUZZEL, BANK_GEHEUGEN, BANK_INGELIJST, BANK_FINALE };
+  module.exports = { BANK_369, BANK_OPENDEUR, BANK_PUZZEL, BANK_GEHEUGEN, BANK_INGELIJST, BANK_FINALE, BANK_FINALE_RESERVE };
 }
