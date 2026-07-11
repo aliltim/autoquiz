@@ -193,9 +193,9 @@
 
   // ---------- Config ----------
   const START_SECONDS = 60;
-  const VAL_369 = 10, VAL_OPENDEUR = 20, VAL_PUZZEL = 30, VAL_GEHEUGEN = 15, VAL_INGELIJST = 15;
+  const VAL_369 = 20, VAL_OPENDEUR = 20, VAL_PUZZEL = 30, VAL_GEHEUGEN = 15, VAL_INGELIJST = 15;
   const N_369_QUESTIONS = 9; // 9 vragen, alleen 3, 6 en 9 leveren iets op
-  const FINALE_STEAL = 10;   // seconden die elk goed finale-antwoord bij de tegenstander wegneemt
+  const FINALE_STEAL = 20;   // seconden die elk goed finale-antwoord bij de tegenstander wegneemt
   const PUZZELS_PER_PLAYER = 2;
   const MAX_MISSES = 2; // opeenvolgende niet-gematchte antwoorden voor keyword-beurten
 
@@ -354,7 +354,7 @@
   // Luister één keer. Resolvet {transcripts, command} — command kan ook van knoppen komen.
   // showBar: aftel-balk tonen voor de tijdslimiet. Uit bij rondes waar je eigen
   // seconden al wegtikken (daar is de score zelf de klok) en in de finale.
-  async function listenOnce(timeoutMs = 9000, showBar = true) {
+  async function listenOnce(timeoutMs = 9000, showBar = true, barCtx = null) {
     await pauseGate();
     return new Promise((resolve) => {
       if (!SpeechRecognitionImpl) {
@@ -374,7 +374,10 @@
         timerFill.style.background = "#4f8cff";
         const barStart = Date.now();
         barTimer = setInterval(() => {
-          const frac = Math.max(0, 1 - (Date.now() - barStart) / timeoutMs);
+          // met barCtx loopt de balk door over meerdere luisterpogingen (beurt-budget)
+          const frac = barCtx
+            ? Math.max(0, 1 - (barCtx.spent + (Date.now() - barStart)) / barCtx.total)
+            : Math.max(0, 1 - (Date.now() - barStart) / timeoutMs);
           timerFill.style.width = (frac * 100) + "%";
           if (frac < 0.3) timerFill.style.background = "#ff6b6b";
         }, 100);
@@ -416,8 +419,8 @@
   // Zoals op tv: buiten 3-6-9 tikt je klok terug terwijl je nadenkt (alleen secondenmodus).
   // De klok staat stil tijdens het voorlezen en tijdens pauze. Geen extra balk hier:
   // het scorebord zelf ís de klok.
-  async function listenTimed(player, timeoutMs = 9000) {
-    if (mode !== "seconds" || !player) return listenOnce(timeoutMs);
+  async function listenTimed(player, timeoutMs = 9000, budget = null) {
+    if (mode !== "seconds" || !player) return budget ? listenWithBudget(budget) : listenOnce(timeoutMs);
     const snap = player.score;
     let elapsed = 0;
     let last = Date.now();
@@ -433,6 +436,20 @@
     if (!paused) elapsed += Date.now() - last;
     player.score = Math.max(0, snap - Math.round(elapsed / 1000));
     renderScoreboard(player);
+    return res;
+  }
+
+  // Eén doorlopend tijdsbudget per beurt voor rondes met de aftel-balk.
+  // De balk reset dus niet na een fout, onverstaanbaar antwoord of "herhaal";
+  // alleen een goed antwoord geeft (in meerantwoord-rondes) verse tijd.
+  const TURN_TIME = 10000;
+  function newBudget(ms = TURN_TIME) { return { total: ms, spent: 0 }; }
+  async function listenWithBudget(budget) {
+    await pauseGate();
+    if (budget.spent >= budget.total - 300) return { transcripts: null, command: "pass" }; // tijd op
+    const t0 = Date.now();
+    const res = await listenOnce(budget.total - budget.spent, true, budget);
+    budget.spent = Math.min(budget.total, budget.spent + (Date.now() - t0));
     return res;
   }
 
@@ -538,9 +555,10 @@
     turnBanner.textContent = `${player.name} is aan de beurt`;
     renderScoreboard(player);
     let attemptsLeft = 2; // 1 herkansing bij storing/geen geluid
+    const budget = newBudget(); // één balk-budget per beurt: reset niet tussendoor
     await speak(`${spokenPrefix}${qText}`);
     while (true) {
-      const res = timed ? await listenTimed(player) : await listenOnce();
+      const res = timed ? await listenTimed(player, 9000, budget) : await listenWithBudget(budget);
       if (res.command === "repeat") { await speak(qText); continue; }
       if (res.command === "pass") return "pass";
       if (res.command === "force") return "correct"; // handmatig goedgekeurd
@@ -571,10 +589,11 @@
     };
     if (spokenIntro) await speak(spokenIntro);
     let misses = 0;
+    let budget = newBudget(); // budget per antwoord: alleen een goed antwoord geeft verse tijd
     const remainingCount = () => state.filter(s => s === "hidden").length;
     while (remainingCount() > 0 && misses < maxMisses) {
-      const res = await listenTimed(player);
-      if (res.command === "noop") { misses = 0; continue; } // slot-tap al verwerkt
+      const res = await listenTimed(player, 9000, budget);
+      if (res.command === "noop") { misses = 0; budget = newBudget(); continue; } // slot-tap al verwerkt
       if (res.command === "repeat") { await speak(repeatText); continue; }
       if (res.command === "pass") break;
       if (res.command === "force") { statusText.textContent = "Tik op het balkje van het antwoord dat gezegd is."; continue; }
@@ -587,6 +606,7 @@
       }
       if (hits.length > 0) {
         misses = 0;
+        budget = newBudget(); // goed antwoord: verse tijd voor het volgende
         hits.forEach(() => award(player, valuePer));
         renderKeywordSlots(keywords, state);
         const left = remainingCount();
@@ -632,7 +652,7 @@
   async function round369() {
     roundBanner.textContent = "Ronde · 3-6-9";
     clearStage();
-    await speak(`De eerste ronde: drie, zes, negen. Negen vragen. Alleen vraag drie, zes en negen leveren ${mode === "seconds" ? "tien seconden" : "een punt"} op. Wie goed antwoordt, houdt de beurt. Bij fout of pas mag de volgende speler dezelfde vraag proberen.`);
+    await speak(`De eerste ronde: drie, zes, negen. Negen vragen. Alleen vraag drie, zes en negen leveren ${mode === "seconds" ? "twintig seconden" : "twee punten"} op. Wie goed antwoordt, houdt de beurt. Bij fout of pas mag de volgende speler dezelfde vraag proberen.`);
     const qs = pickFresh("369", BANK_369, N_369_QUESTIONS);
     let turnIdx = 0;
     for (let i = 0; i < qs.length; i++) {
@@ -705,8 +725,9 @@
         const cluesSpoken = `De aanwijzingen zijn: ${puz.clues.join(". ")}. Wat is het verband?`;
         await speak(`${player.name}. ${cluesSpoken}`);
         let solved = false, attempts = 0;
+        const budget = newBudget(20000); // één balk-budget voor de hele puzzelbeurt (beide pogingen)
         while (attempts < 2 && !solved) {
-          const res = await listenTimed(player, 11000);
+          const res = await listenTimed(player, 11000, budget);
           if (res.command === "repeat") { await speak(cluesSpoken); continue; }
           if (res.command === "pass") break;
           if (res.command === "force") { solved = true; break; }
@@ -808,9 +829,10 @@
       else await speak(`${player.name}, jouw beurt.`);
       manualIdx = -1;
       let retries = 1;
+      const budget = newBudget(); // één balk-budget per beurt
       let outcome = null; // "hit" | "out"
       while (outcome === null) {
-        const res = await listenTimed(player);
+        const res = await listenTimed(player, 9000, budget);
         if (manualIdx >= 0 && state[manualIdx] === "hidden") {
           state[manualIdx] = "found";
           award(player, VAL_INGELIJST);
@@ -1041,15 +1063,17 @@
       renderKeywordSlots(subject.keywords, state);
       await speak(vraag);
       let strikes = 0; // 2 missers na elkaar (beide spelers samen) = volgend onderwerp
+      let budget = newBudget();
       while (state.some(s => s === "hidden") && strikes < 2) {
         if (manualHit) {
           manualHit = false;
           strikes = 0; // goedgekeurd: zelfde speler mag door
           dingGoed();
+          budget = newBudget();
           continue;
         }
         turnBanner.textContent = `${cur.name} is aan de beurt`;
-        const res = await listenOnce();
+        const res = await listenWithBudget(budget);
         if (res.command === "noop") continue; // slot-tap; bovenaan de lus verwerkt
         if (res.command === "repeat") { await speak(vraag); continue; }
         if (res.command === "force") { statusText.textContent = "Tik op het balkje van het gezegde antwoord."; continue; }
@@ -1067,11 +1091,13 @@
           renderKeywordSlots(subject.keywords, state);
           showResult(true, `✅ ${cur.name}: ${tally.get(cur)}`);
           dingGoed(); // rapid-fire: geen spraak, direct door
+          budget = newBudget(); // goed antwoord: verse tijd
         } else {
           strikes++;
           showResult(false, "❌");
           buzzFout();
           cur = cur === p1 ? p2 : p1; // pas of fout: beurt naar de ander
+          budget = newBudget(); // nieuwe beurt, nieuw budget
           if (strikes < 2) await speak(`${cur.name}, jouw beurt.`);
         }
       }
