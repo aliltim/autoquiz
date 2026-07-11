@@ -193,7 +193,7 @@
 
   // ---------- Config ----------
   const START_SECONDS = 60;
-  const VAL_369 = 20, VAL_OPENDEUR = 20, VAL_PUZZEL = 30, VAL_GEHEUGEN = 15, VAL_INGELIJST = 15;
+  const VAL_369 = 20, VAL_OPENDEUR = 20, VAL_PUZZEL = 40, VAL_GEHEUGEN = 20, VAL_INGELIJST = 20;
   const N_369_QUESTIONS = 9; // 9 vragen, alleen 3, 6 en 9 leveren iets op
   const FINALE_STEAL = 20;   // seconden die elk goed finale-antwoord bij de tegenstander wegneemt
   const PUZZELS_PER_PLAYER = 2;
@@ -585,6 +585,7 @@
       award(player, valuePer);
       renderKeywordSlots(keywords, state);
       showResult(true, `✅ ${keywords[i].label} (goedgekeurd)`);
+      dingGoed();
       if (activeListen) activeListen.finish({ transcripts: null, command: "noop" });
     };
     if (spokenIntro) await speak(spokenIntro);
@@ -611,11 +612,12 @@
         renderKeywordSlots(keywords, state);
         const left = remainingCount();
         showResult(true, `✅ ${hits.join(", ")}`);
-        await speak(`Juist: ${hits.join(", en ")}.` + (left > 0 ? ` Nog ${left}.` : " Alles gevonden!"));
+        dingGoed(); // rapid-fire: geen spraak, direct weer luisteren
+        statusText.textContent = left > 0 ? `Nog ${left} — ga door!` : "Alles gevonden!";
       } else {
         misses++;
         showResult(false, "❌ Niet gevonden");
-        if (misses < maxMisses) await speak("Nee. Probeer nog eens, of zeg: pas.");
+        buzzFout();
       }
     }
   }
@@ -710,7 +712,7 @@
   async function roundPuzzel() {
     roundBanner.textContent = "Ronde · De Puzzel";
     clearStage();
-    await speak(`De Puzzel. Je hoort vier aanwijzingen die allemaal naar één woord verwijzen. Raad het verband, goed voor ${mode === "seconds" ? "dertig seconden" : "drie punten"}. Zeg herhaal om de aanwijzingen opnieuw te horen.`);
+    await speak(`De Puzzel. Je hoort vier aanwijzingen die allemaal naar één woord verwijzen. Raad het verband, goed voor ${mode === "seconds" ? "veertig seconden" : "vier punten"}. Zeg herhaal om de aanwijzingen opnieuw te horen.`);
     const puzzles = pickFresh("puzzel", BANK_PUZZEL, players.length * PUZZELS_PER_PLAYER);
     let pi = 0;
     for (let r = 0; r < PUZZELS_PER_PLAYER; r++) {
@@ -756,7 +758,7 @@
   async function roundGeheugen() {
     roundBanner.textContent = "Ronde · Collectief Geheugen";
     clearStage();
-    await speak(`Het Collectief Geheugen. Luister goed naar een kort verhaal. Daarna volgen vijf vragen over de details. Elk goed antwoord is ${mode === "seconds" ? "vijftien seconden" : "punten"} waard.`);
+    await speak(`Het Collectief Geheugen. Luister goed naar een kort verhaal. Daarna volgen vijf vragen over de details. Elk goed antwoord is ${mode === "seconds" ? "twintig seconden" : "twee punten"} waard.`);
     const stories = pickFresh("geheugen", BANK_GEHEUGEN, players.length);
     for (let i = 0; i < players.length && i < stories.length; i++) {
       clearStage();
@@ -795,7 +797,7 @@
   async function roundIngelijst() {
     roundBanner.textContent = "Ronde · Ingelijst";
     clearStage();
-    await speak(`Ingelijst. Eén vraag met een lange lijst goede antwoorden. Om de beurt geef je precies één antwoord, goed voor ${mode === "seconds" ? "vijftien seconden" : "een punt of twee"}. Fout of pas? Dan lig je eruit. We spelen door tot iedereen eruit ligt of de lijst compleet is.`);
+    await speak(`Ingelijst. Eén vraag met een lange lijst goede antwoorden. Om de beurt geef je precies één antwoord, goed voor ${mode === "seconds" ? "twintig seconden" : "twee punten"}. Fout of pas? Dan lig je eruit. We spelen door tot iedereen eruit ligt of de lijst compleet is.`);
     const nQuestions = Math.min(2, Math.max(1, players.length));
     const subjects = pickFresh("ingelijst", BANK_INGELIJST, nQuestions);
     for (let si = 0; si < subjects.length; si++) {
