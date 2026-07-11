@@ -177,6 +177,7 @@
 </div>
 
 <script src="questions.js"></script>
+<script src="questions_extra.js"></script>
 <script src="match.js"></script>
 <script>
 (function () {
@@ -193,7 +194,7 @@
 
   // ---------- Config ----------
   const START_SECONDS = 60;
-  const VAL_369 = 20, VAL_OPENDEUR = 20, VAL_PUZZEL = 40, VAL_GEHEUGEN = 20, VAL_INGELIJST = 20;
+  const VAL_369 = 20, VAL_OPENDEUR = 40, VAL_PUZZEL = 40, VAL_GEHEUGEN = 20, VAL_INGELIJST = 20;
   const N_369_QUESTIONS = 9; // 9 vragen, alleen 3, 6 en 9 leveren iets op
   const FINALE_STEAL = 20;   // seconden die elk goed finale-antwoord bij de tegenstander wegneemt
   const PUZZELS_PER_PLAYER = 2;
@@ -698,7 +699,7 @@
     roundBanner.textContent = "Ronde · Open Deur";
     clearStage();
     const klok = mode === "seconds" ? " Let op: je klok tikt terug terwijl je nadenkt." : "";
-    await speak(`De Open Deur. Iedere speler krijgt een onderwerp met vier sleutelwoorden. Elk goed antwoord is ${mode === "seconds" ? "twintig seconden" : "twee punten"} waard. Zeg pas als je het niet meer weet — dan mogen de anderen overnemen.${klok}`);
+    await speak(`De Open Deur. Iedere speler krijgt een onderwerp met vier sleutelwoorden. Elk goed antwoord is ${mode === "seconds" ? "veertig seconden" : "vier punten"} waard. Zeg pas als je het niet meer weet — dan mogen de anderen overnemen.${klok}`);
     const topics = pickFresh("opendeur", BANK_OPENDEUR, players.length);
     for (let i = 0; i < players.length && i < topics.length; i++) {
       clearStage();
